@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f6f1e3;
+  --surface: #ffffff;
+  --surface-2: #efe6ce;
+  --ink: #201d14;
+  --muted: #6c6450;
+  --border: #e1d5b6;
+  --accent: #1d4429;
+  --accent-strong: #12301c;
+  --accent-soft: #dee9de;
+  --amber: #a97829;
+  --amber-soft: #f1e0b4;
+  --red: #a5432b;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --bg: #14150d;
+  --surface: #1c1c13;
+  --surface-2: #262518;
+  --ink: #f0ead6;
+  --muted: #a9a084;
+  --border: #383623;
+  --accent: #75a664;
+  --accent-strong: #9cc98a;
+  --accent-soft: #223020;
+  --amber: #dcad5b;
+  --amber-soft: #3b2e14;
+  --red: #e0917a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}

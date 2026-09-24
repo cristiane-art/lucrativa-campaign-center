@@ -1,0 +1,369 @@
+// Lucrativa Campaign Center — schema principal
+// SQLite no MVP (zero-config); todo model relevante carrega clientId/campaignId
+// para isolamento multi-tenant (REGRA: nunca vazar dado entre clientes).
+// SQLite não suporta `enum` no Prisma — os valores fechados (status, tipos,
+// níveis) são strings validadas por zod em src/lib/types.ts; ver docs/architecture.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique
+  brandName          String   @default("Lucrattiva")
+  brandPrimaryColor  String   @default("#1D4429")
+  brandAccentColor   String   @default("#A97829")
+  createdAt          DateTime @default(now())
+
+  campaigns Campaign[]
+
+  @@map("clients")
+}
+
+model Campaign {
+  id       String @id @default(cuid())
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  name        String
+  description String?
+  campaignType String  @default("evento") // evento | lancamento | promocao | institucional | geracao_leads | conteudo | sazonal
+  status       String  @default("DISCOVERY") // DISCOVERY | PLANNING | ACTIVE | PAUSED | COMPLETED | CANCELLED
+
+  // --- Objetivo (nunca inferido sem o usuário confirmar) ---
+  primaryObjective    String?
+  secondaryObjectives String  @default("[]") // JSON string[]
+
+  // --- Datas ---
+  startDate DateTime?
+  endDate   DateTime?
+
+  // --- Evento (quando campaignType = evento) ---
+  eventDate     DateTime?
+  eventTime     String?
+  eventLocation String?
+  eventFormat   String? // presencial | online | hibrido
+  eventCapacity Int?
+  eventIsPaid   Boolean?
+  eventPrice    Float?
+
+  // --- Público ---
+  audience          String?
+  audienceSegments  String  @default("[]") // JSON string[]
+  region            String?
+
+  // --- Meta ---
+  targetResult      Int?
+  targetMetricLabel String? // ex: "participantes presentes", "inscrições", "leads"
+
+  // --- Orçamento (nunca assumido; null = não informado) ---
+  adBudget       Float?
+  creativeBudget Float?
+  physicalBudget Float?
+  partnerBudget  Float?
+  otherBudget    Float?
+  budgetRangeLabel String? // faixa selecionada no wizard, ex: "R$500-1000", antes de valor exato
+
+  // --- Oferta / CTA ---
+  valueProposition String?
+  cta              String?
+  ctaLink          String?
+
+  // --- Canais e ativos disponíveis ---
+  channels        String @default("[]") // JSON string[]
+  assetsAvailable String @default("[]") // JSON string[]
+  constraints     String @default("[]") // JSON string[]
+
+  // --- Blob de descoberta: tudo que não vira coluna própria (palestrantes,
+  // histórico de campanhas, parceiros citados no briefing, restrições
+  // detalhadas etc.) — ver CampaignBriefingExtra em src/lib/types.ts ---
+  briefingExtra String @default("{}") // JSON
+
+  // --- Completude do briefing ---
+  briefingComplete Boolean @default(false)
+  briefingMissing  String  @default("[]") // JSON string[] de chaves faltantes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks          Task[]
+  researchResults ResearchResult[]
+  strategyPlans  StrategyPlan[]
+  contentItems   ContentItem[]
+  creativeAssets CreativeAsset[]
+  trackingLinks  TrackingLink[]
+  qrCodes        QRCode[]
+  leads          Lead[]
+  registrations  Registration[]
+  partners       Partner[]
+  activityLogs   ActivityLog[]
+  approvals      Approval[]
+  aiUsages       AIUsage[]
+  chatMessages   ChatMessage[]
+
+  @@map("campaigns")
+}
+
+model Task {
+  id          String @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+
+  title           String
+  description     String?
+  type            String  // research | strategy | content | creative | tracking | ads | whatsapp | physical | partner | analytics | other
+  assignedTo      String  @default("agente") // "agente" | "equipe" | nome de pessoa
+  status          String  @default("TODO") // TODO | IN_PROGRESS | WAITING_APPROVAL | BLOCKED | COMPLETED | CANCELLED
+  priority        String  @default("MEDIA") // ALTA | MEDIA | BAIXA
+  automationLevel String  @default("HUMAN") // AUTOMATIC | ASSISTED | HUMAN
+  dueDate         DateTime?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@map("tasks")
+}
+
+model ResearchResult {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  source    String // "web" | "manual" | nome do site/domínio
+  title     String
+  url       String?
+  summary   String
+  category  String // FACTUAL | INFERRED | RECOMMENDATION
+  relevance String @default("MEDIA") // ALTA | MEDIA | BAIXA
+
+  createdAt DateTime @default(now())
+
+  @@map("research_results")
+}
+
+model StrategyPlan {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  primaryAudience   String
+  secondaryAudiences String @default("[]") // JSON
+  valueProposition  String
+  keyMessage        String
+  secondaryMessages String  @default("[]") // JSON
+  channelStrategy   String  @default("[]") // JSON [{channel, role, cadence}]
+  funnel            String  @default("[]") // JSON [{stage, targetLabel, estimate?, isEstimate}]
+  calendar          String  @default("[]") // JSON [{date, theme, channel, format}]
+  kpis              String  @default("[]") // JSON [{label, target, isEstimate}]
+  budgetSuggestion  String  @default("{}") // JSON
+  contingencyPlan   String?
+
+  createdAt DateTime @default(now())
+
+  @@map("strategy_plans")
+}
+
+model ContentItem {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  contentType    String // feed | carrossel | reel | story | post | anuncio | convite_whatsapp | lembrete_whatsapp | flyer | cartaz | banner | roteiro_radio
+  channel        String // instagram | facebook | whatsapp | radio | fisico | outro
+  title          String
+  hook           String?
+  body           String
+  cta            String?
+  targetAudience String?
+  status         String  @default("DRAFT") // DRAFT | PENDING_APPROVAL | APPROVED | SCHEDULED | PUBLISHED | REJECTED | ARCHIVED
+  scheduledAt    DateTime?
+  generatedBy    String  @default("content_agent")
+  rejectionNote  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creativeAssets CreativeAsset[]
+
+  @@map("content_items")
+}
+
+model CreativeAsset {
+  id            String @id @default(cuid())
+  campaignId    String
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  contentItemId String?
+  contentItem   ContentItem? @relation(fields: [contentItemId], references: [id])
+
+  assetType String // feed | story | carrossel | anuncio | flyer | banner
+  channel   String
+  briefJson String // JSON: briefing visual estruturado (ver seção 10 do spec)
+  imageUrl  String?
+  provider  String  @default("mock") // "mock" | nome do provider real configurado
+  status    String  @default("PENDING_GENERATION") // PENDING_GENERATION | GENERATED | FAILED | APPROVED | REJECTED
+
+  createdAt DateTime @default(now())
+
+  @@map("creative_assets")
+}
+
+model TrackingLink {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  source          String // instagram | facebook | whatsapp | radio | partner | flyer | qr | email | google
+  medium          String // social | cpc | message | print | referral
+  campaignTag     String // utm_campaign
+  content         String? // utm_content
+  destinationUrl  String
+  shortCode       String  @unique
+  clicks          Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  qrCodes QRCode[]
+
+  @@map("tracking_links")
+}
+
+model QRCode {
+  id             String @id @default(cuid())
+  campaignId     String
+  campaign       Campaign @relation(fields: [campaignId], references: [id])
+  trackingLinkId String?
+  trackingLink   TrackingLink? @relation(fields: [trackingLinkId], references: [id])
+
+  label         String // "QR01", "QR02"...
+  physicalAsset String? // "cartaz empresa A", "flyer", "rádio"
+  scans         Int     @default(0)
+  conversions   Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@map("qr_codes")
+}
+
+model Lead {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  name   String
+  phone  String?
+  email  String?
+  city   String?
+  source String? // origem: utm_source ou "manual"
+  status String  @default("NEW") // NEW | INTERESTED | REGISTERED | CONFIRMED | ATTENDED | OPPORTUNITY | CUSTOMER
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  registrations Registration[]
+
+  @@map("leads")
+}
+
+model Registration {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  leadId     String
+  lead       Lead   @relation(fields: [leadId], references: [id])
+
+  source      String?
+  status      String  @default("REGISTERED") // REGISTERED | CONFIRMED | ATTENDED | NO_SHOW | CANCELLED
+  checkedInAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@map("registrations")
+}
+
+model Partner {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  name              String
+  company           String?
+  phone             String?
+  email             String?
+  location          String?
+  type              String? // empresa | influenciador | produtor | entidade
+  status            String  @default("PROSPECT") // PROSPECT | CONTACTED | AGREED | MATERIAL_SENT | ACTIVE | COMPLETED
+  registrationsCount Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@map("partners")
+}
+
+model ActivityLog {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  agent      String // "research_agent" | "strategy_agent" | ... | "sistema" | "usuario"
+  action     String // descrição curta da ação
+  detailsJson String @default("{}")
+
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
+}
+
+model Approval {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  entityType String // content_item | creative_asset | ads_plan | whatsapp_batch | budget_change
+  entityId   String
+  level      String  @default("HUMAN_APPROVAL") // AUTOMATIC | ASSISTED | HUMAN_APPROVAL
+  status     String  @default("PENDING") // PENDING | APPROVED | REJECTED
+  summary    String
+  requestedBy String @default("sistema")
+  decidedBy   String?
+  decidedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@map("approvals")
+}
+
+model AIUsage {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  agent            String
+  model            String
+  inputTokens      Int
+  outputTokens     Int
+  estimatedCostUsd Float
+
+  createdAt DateTime @default(now())
+
+  @@map("ai_usage")
+}
+
+model ChatMessage {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  role    String // user | assistant
+  content String
+
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}
