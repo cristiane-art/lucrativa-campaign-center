@@ -2,11 +2,16 @@
 
 ## Rodando localmente
 
+O banco é Postgres (desde a migração para permitir hospedagem serverless — ver
+"Publicar" abaixo). Você precisa de um Postgres acessível: local
+(`postgresql://...@localhost:5432/...`) ou uma branch gratuita de um provedor
+gerenciado (Neon, Vercel Postgres, Supabase).
+
 ```bash
 npm install
-cp .env.example .env        # ajuste ANTHROPIC_API_KEY se quiser os agentes de IA ativos
-npm run db:push             # cria o SQLite local (prisma/dev.db)
-npm run db:seed             # cria o tenant Lucrattiva + a campanha "Evento Lucrativa Agro"
+cp .env.example .env        # ajuste DATABASE_URL/DIRECT_URL e ANTHROPIC_API_KEY
+npm run db:push             # aplica o schema no Postgres apontado
+npm run db:seed             # cria o tenant Lucrattiva + a campanha do evento
 npm run dev                 # http://localhost:3000
 ```
 
@@ -27,14 +32,79 @@ npm run build
 npm start
 ```
 
-## Banco de dados
+## Publicar: Vercel + Postgres (passo a passo)
 
-MVP roda em SQLite (zero-config, arquivo único). Para produção com mais de um
-operador editando ao mesmo tempo, trocar `datasource.provider` em
-`prisma/schema.prisma` de `sqlite` para `postgresql` e apontar `DATABASE_URL` para o
-Postgres — nenhuma query da aplicação usa SQL específico de SQLite, então a migração é
-só isso mais rodar `prisma db push` (ou `migrate deploy`, se preferir migrations
-versionadas) contra o banco novo.
+Caminho recomendado para colocar o link de inscrição no ar. ~15-20 minutos.
+
+**1. Crie o banco Postgres**
+
+- No painel da [Vercel](https://vercel.com) → seu projeto (crie um projeto vazio se
+  ainda não importou o repositório) → aba **Storage** → **Create Database** → escolha
+  **Postgres** (é a integração com a Neon por baixo) → crie no plano gratuito.
+- Alternativa equivalente: criar direto em [neon.tech](https://neon.tech) (gratuito) e
+  colar as URLs manualmente — o passo 3 é o mesmo.
+
+**2. Importe o repositório**
+
+- Na Vercel: **Add New → Project** → selecione `cristiane-art/lucrativa-campaign-center`
+  → branch `main` (ou a que você quer publicar).
+- Framework: a Vercel detecta Next.js sozinha. Não precisa mudar build command nem
+  output directory.
+
+**3. Configure as variáveis de ambiente**
+
+Em **Settings → Environment Variables** do projeto na Vercel:
+
+| Variável | De onde vem |
+|---|---|
+| `DATABASE_URL` | Se você criou o Postgres pela própria Vercel (passo 1), ela **já preenche isso sozinha**. Se usou Neon direto, cole a connection string com `?sslmode=require` |
+| `DIRECT_URL` | Mesma origem — Vercel Postgres/Neon dão uma URL "não-pooled" separada (geralmente `POSTGRES_URL_NON_POOLING` ou similar no painel da integração); copie o valor dela para `DIRECT_URL` |
+| `ANTHROPIC_API_KEY` | https://console.anthropic.com/settings/keys — opcional, sem ela os agentes de IA ficam pausados |
+| `DASHBOARD_PASSWORD` | Escolha uma senha para proteger `/campanhas` — **obrigatório antes de divulgar o link**, já que o dashboard mostra dado pessoal de participante |
+| `NEXT_PUBLIC_BASE_URL` | A URL final do projeto, ex: `https://evento-lucrattiva.vercel.app` (ou seu domínio próprio) — usada nos QR Codes e links curtos |
+| `SEED_CLIENT_SLUG` / `SEED_CLIENT_NAME` | Pode deixar os valores padrão (`lucrattiva` / `Lucrattiva Contabilidade`) |
+| `IMAGE_PROVIDER` / `IMAGE_PROVIDER_API_KEY` | Deixe em branco a menos que já tenha decidido usar geração de imagem real |
+
+**4. Aplique o schema no banco de produção**
+
+Antes do primeiro deploy funcionar de verdade, o banco novo precisa das tabelas. Do
+seu computador (ou desta sessão), com o CLI da Vercel:
+
+```bash
+npm i -g vercel
+vercel link                 # conecta esta pasta ao projeto criado na Vercel
+vercel env pull .env.production.local   # baixa as env vars reais do projeto
+npx dotenv -e .env.production.local -- npx prisma db push
+npx dotenv -e .env.production.local -- npx tsx prisma/seed.ts
+```
+
+(Se não quiser instalar `dotenv-cli`: `npx dotenv-cli -e ... --` funciona sem
+instalação prévia, ou exporte as duas variáveis manualmente no terminal antes de
+rodar `npx prisma db push` / `npx tsx prisma/seed.ts`.)
+
+**5. Deploy**
+
+- Clique **Deploy** na Vercel (ou apenas dê `git push` na branch conectada — deploy
+  automático a partir daí).
+- Depois do primeiro deploy, toda vez que a branch `main` receber um push, a Vercel
+  publica sozinha.
+
+**6. Confira**
+
+- Abra a URL do projeto → `/campanhas` deve pedir a senha do dashboard.
+- Abra `/inscricao/<id-da-campanha>` (pegue o ID no dashboard) e confirme que a
+  landing page carrega e o formulário envia.
+- Se quiser um domínio próprio (ex: `evento.lucrattiva.com.br`), **Settings →
+  Domains** no projeto da Vercel.
+
+## Outras opções (Railway / Render)
+
+Mesma ideia — conectar o repositório, adicionar um Postgres gerenciado, configurar as
+mesmas variáveis de ambiente da tabela acima, rodar `prisma db push` + o seed uma vez
+contra o banco novo. Essas plataformas também suportam disco persistente (o que
+permitiria manter SQLite), mas Postgres continua sendo a escolha mais segura assim
+que mais de uma pessoa for operar ao mesmo tempo (ex.: check-in simultâneo no dia do
+evento).
 
 ## LGPD / dados pessoais
 
@@ -76,28 +146,8 @@ versionadas) contra o banco novo.
   front-end. As únicas rotas públicas são `/api/registration` (inscrição) e
   `/r/[code]` (redirecionamento).
 
-## Publicar (colocar no ar)
-
-Ver a mensagem da sessão que gerou este módulo para a comparação completa de
-opções — resumo:
-
-- **SQLite (`prisma/dev.db`) não sobrevive a hospedagem serverless** (Vercel,
-  Netlify): cada invocação pode rodar num filesystem efêmero, então dado gravado
-  numa requisição pode não estar lá na próxima. Antes de publicar em qualquer
-  plataforma serverless, trocar `datasource.provider` para `postgresql` (ver seção
-  acima) e apontar `DATABASE_URL` para um Postgres hospedado (Vercel Postgres, Neon,
-  Supabase, Railway, etc.) — é a mesma migração de uma linha descrita acima.
-- Plataformas com disco persistente (Railway, Render, uma VPS) podem rodar com
-  SQLite sem essa migração, mas Postgres continua sendo a escolha mais segura assim
-  que mais de uma pessoa vai editar ao mesmo tempo (ex.: equipe fazendo check-in
-  simultâneo no dia do evento).
-- Configure `DASHBOARD_PASSWORD` e `NEXT_PUBLIC_BASE_URL` (para os links curtos e QR
-  Codes apontarem para o domínio real, não `localhost`) antes de divulgar o link de
-  inscrição.
-
 ## Observabilidade
 
-`ActivityLog` é o log de auditoria funcional (toda ação de agente/usuário). Para logs
-de infraestrutura (erros de request, latência), qualquer provedor de hospedagem que
-capture stdout/stderr do processo Next.js já cobre o básico — nada adicional foi
-configurado nesta entrega.
+`ActivityLog` é o log de auditoria funcional (toda ação de agente/usuário). A própria
+Vercel já dá logs de request/erro por padrão em **Deployments → [seu deploy] →
+Logs**; nada adicional foi configurado nesta entrega.

@@ -1,16 +1,20 @@
 // Lucrativa Campaign Center — schema principal
-// SQLite no MVP (zero-config); todo model relevante carrega clientId/campaignId
-// para isolamento multi-tenant (REGRA: nunca vazar dado entre clientes).
-// SQLite não suporta `enum` no Prisma — os valores fechados (status, tipos,
-// níveis) são strings validadas por zod em src/lib/types.ts; ver docs/architecture.md.
+// Postgres em produção (ver docs/deployment.md — passo a passo Vercel + Postgres).
+// Os valores fechados (status, tipos, níveis) continuam como String validada por
+// zod em src/lib/types.ts em vez de enum nativo do Postgres — decisão mantida de
+// propósito ao migrar de SQLite: evita uma migração de schema toda vez que um
+// valor novo é adicionado, e o projeto todo (schema + validação) já era assim.
+// `directUrl` é a conexão direta (sem pgbouncer) usada só por `prisma db push`/
+// `migrate` — a Vercel Postgres (e a Neon) dão as duas URLs prontas.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Client {

@@ -20,17 +20,19 @@ estratégia → conteúdo → criativo → rastreamento → leads → métricas)
 | Camada | Escolha | Por quê |
 |---|---|---|
 | Framework | Next.js 16 (App Router) + TypeScript | Front-end e API routes no mesmo projeto, server components para dados, sem infra extra |
-| Banco | SQLite via Prisma (`prisma/schema.prisma`) | Zero-config para o MVP; troca para Postgres é só mudar `datasource.provider` — nenhum código de aplicação usa SQL cru |
+| Banco | Postgres via Prisma (`prisma/schema.prisma`) | Roda em qualquer hospedagem, inclusive serverless (Vercel) — ver `docs/deployment.md`. Nenhum código de aplicação usa SQL cru |
 | IA | `@anthropic-ai/sdk` direto (sem framework de agente) | Cada agente é uma função TypeScript com prompt + parsing de JSON — mais fácil de auditar/testar que um framework genérico |
 | Estilo | Tailwind CSS com tokens de marca (`globals.css`) | Consistência de marca sem depender de um design system externo |
 | QR/UTM | `qrcode` + geração de URL local | Cálculo puro, nunca passa por LLM (REGRA 38 do briefing) |
 
-## Por que SQLite não é um enum
+## Por que status/tipo não são enum do Postgres
 
-O Prisma **não suporta `enum` nativo no conector SQLite**. Todo campo de status/tipo
-fechado (`Campaign.status`, `Task.status`, `ContentItem.status` etc.) é uma coluna
-`String`, validada por schemas Zod em `src/lib/types.ts` — a fonte da verdade dos
-valores válidos vive lá, não espalhada pelo código.
+O projeto nasceu em SQLite (que não suporta `enum` nativo no Prisma) e manteve a
+mesma escolha depois de migrar para Postgres: todo campo de status/tipo fechado
+(`Campaign.status`, `Task.status`, `ContentItem.status` etc.) é uma coluna `String`,
+validada por schemas Zod em `src/lib/types.ts` — a fonte da verdade dos valores
+válidos vive lá, não espalhada pelo código, e adicionar um valor novo nunca exige uma
+migração de schema.
 
 ## Multi-tenant
 
@@ -54,7 +56,7 @@ src/app/campanhas/           Páginas do Campaign Center (wizard, dashboard, sub
 src/app/inscricao/[id]/      Landing page pública de inscrição de evento
 src/app/r/[code]/            Redirecionador de link curto (UTM)
 src/components/              UI: primitivos (ui.tsx), wizard de descoberta, dashboard, chat
-tests/                       Vitest — banco de teste isolado (tests/test.db), nunca o dev.db
+tests/                       Vitest — banco de teste isolado (Postgres separado, ver TEST_DATABASE_URL), nunca o de dev/produção
 ```
 
 ## Fluxo de uma campanha

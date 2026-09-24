@@ -9,9 +9,10 @@ export default defineConfig({
     testTimeout: 15000,
     env: {
       DATABASE_URL: TEST_DB_URL,
+      DIRECT_URL: TEST_DB_URL,
     },
-    // Testes de banco compartilham o mesmo arquivo SQLite — evita corrida
-    // entre arquivos de teste rodando em paralelo.
+    // Testes de banco compartilham o mesmo banco Postgres de teste — evita
+    // corrida entre arquivos de teste rodando em paralelo.
     fileParallelism: false,
   },
   resolve: {

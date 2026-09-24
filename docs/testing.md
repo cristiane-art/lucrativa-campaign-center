@@ -7,10 +7,12 @@ npm run test:watch
 
 ## Como o banco de teste funciona
 
-`vitest.config.ts` aponta `DATABASE_URL` para `tests/test.db` (nunca o
-`prisma/dev.db` de desenvolvimento). `tests/globalSetup.ts` recria o schema nesse
-arquivo antes da suíte rodar. `fileParallelism: false` porque os testes de banco
-compartilham o mesmo arquivo SQLite — rodar em paralelo geraria corrida.
+`vitest.config.ts` aponta `DATABASE_URL`/`DIRECT_URL` para um banco Postgres
+separado do de desenvolvimento — por padrão `lucrativa_test` no mesmo Postgres local
+(`tests/testDb.ts`), ou o valor de `TEST_DATABASE_URL` quando definida (útil em CI,
+para apontar para um Postgres descartável). `tests/globalSetup.ts` garante o schema
+em dia nesse banco antes da suíte rodar. `fileParallelism: false` porque os testes de
+banco compartilham o mesmo banco de teste — rodar em paralelo geraria corrida.
 
 ## O que está coberto
 
