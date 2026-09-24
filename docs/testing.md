@@ -21,6 +21,7 @@ compartilham o mesmo arquivo SQLite — rodar em paralelo geraria corrida.
 | `tests/campaign.test.ts` | Criação de campanha, **isolamento entre clientes** (uma campanha de um cliente nunca aparece na query de outro), `getOrCreateDefaultClient` idempotente |
 | `tests/taskEngine.test.ts` | Toda tarefa carrega `campaignId`, transições de status, registro no activity log |
 | `tests/approvals.test.ts` | Nível `AUTOMATIC` já nasce aprovado; `HUMAN_APPROVAL` fica `PENDING` até decisão; rejeitar não aprova por engano |
+| `tests/credentialing.test.ts` | `participantCode` único por lead; reinscrição nunca gera uma segunda `Registration`; check-in marca `CHECKED_IN` + `checkedInAt`; `marketingConsent` nasce `false` (nunca assumido) |
 | `tests/campaignUpdate.test.ts` | Regressão do bug real encontrado em teste manual: patches parciais do wizard não podem apagar campos de `briefingExtra` preenchidos numa etapa anterior; `serializeCampaign` nunca devolve array como `undefined` |
 
 ## Testado manualmente no navegador (Playwright)

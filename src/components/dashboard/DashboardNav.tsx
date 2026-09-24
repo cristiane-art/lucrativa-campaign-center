@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui";
 import { BRAND } from "@/lib/brand";
 
@@ -15,10 +15,12 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function DashboardNav({ campaignId, campaignName, status }: { campaignId: string; campaignName: string; status: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   const tabs = [
     { href: `/campanhas/${campaignId}`, label: "Visão geral" },
     { href: `/campanhas/${campaignId}/conteudo`, label: "Conteúdo" },
     { href: `/campanhas/${campaignId}/leads`, label: "Leads" },
+    { href: `/campanhas/${campaignId}/credenciamento`, label: "Credenciamento" },
     { href: `/campanhas/${campaignId}/tracking`, label: "Divulgação" },
     { href: `/campanhas/${campaignId}/tarefas`, label: "Tarefas" },
   ];
@@ -32,7 +34,19 @@ export function DashboardNav({ campaignId, campaignName, status }: { campaignId:
           </Link>
           <h1 className="font-display text-2xl font-semibold text-accent-strong">{campaignName}</h1>
         </div>
-        <Badge tone="accent">{STATUS_LABEL[status] ?? status}</Badge>
+        <div className="flex items-center gap-3">
+          <Badge tone="accent">{STATUS_LABEL[status] ?? status}</Badge>
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              router.push("/login");
+              router.refresh();
+            }}
+            className="text-xs text-muted hover:text-ink"
+          >
+            Sair
+          </button>
+        </div>
       </div>
       <nav className="mt-4 flex gap-1 border-b border-border">
         {tabs.map((t) => {

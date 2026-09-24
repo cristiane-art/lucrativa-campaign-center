@@ -12,6 +12,12 @@ export function generateShortCode(): string {
   return shortCodeAlphabet();
 }
 
+// Código de participante (credenciamento) — mesma base seguro-de-digitar,
+// prefixo próprio para diferenciar visualmente de um link curto.
+export function generateParticipantCode(): string {
+  return `LC-${shortCodeAlphabet().toUpperCase()}`;
+}
+
 function slugifyForUtm(value: string): string {
   return value
     .normalize("NFD")

@@ -76,6 +76,11 @@ uma interface clara, um modo mock óbvio, e o adaptador real isolado num arquivo
 | `/api/leads/[id]` | PATCH | Trocar status do lead no pipeline |
 | `/api/campaigns/[id]/tracking` | GET | Links UTM + QR Codes |
 | `/api/qrcodes/[id]/png` | GET | PNG do QR Code (gerado na hora) |
-| `/api/registration` | POST | Inscrição pública (landing page) |
-| `/r/[code]` | GET | Redirecionador de link curto |
+| `/api/campaigns/[id]/checkin` | POST | Credenciamento — busca por código/telefone/nome e marca `CHECKED_IN` |
+| `/api/registration` | POST | Inscrição pública (landing page) — **pública**, sem senha |
+| `/r/[code]` | GET | Redirecionador de link curto — **pública** |
 | `/api/campaigns/[id]/activity` | GET | Log de auditoria da campanha |
+| `/api/auth/login` | POST | Login do dashboard (`DASHBOARD_PASSWORD`) |
+| `/api/auth/logout` | POST | Encerra a sessão do dashboard |
+
+Todas as rotas acima, exceto as marcadas **pública**, ficam atrás de `DASHBOARD_PASSWORD` quando configurada (`src/middleware.ts`).

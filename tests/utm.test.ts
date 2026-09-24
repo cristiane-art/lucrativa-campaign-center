@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildUtmUrl, buildShortUrl, generateShortCode } from "@/lib/utm";
+import { buildUtmUrl, buildShortUrl, generateShortCode, generateParticipantCode } from "@/lib/utm";
 
 describe("Tracking Agent — UTM e código curto (cálculo puro, sem LLM)", () => {
   it("monta a URL com os parâmetros utm corretos", () => {
@@ -49,5 +49,13 @@ describe("Tracking Agent — UTM e código curto (cálculo puro, sem LLM)", () =
   it("monta a URL curta a partir do código", () => {
     expect(buildShortUrl("http://localhost:3000/", "abc1234")).toBe("http://localhost:3000/r/abc1234");
     expect(buildShortUrl("http://localhost:3000", "abc1234")).toBe("http://localhost:3000/r/abc1234");
+  });
+
+  it("gera código de participante com prefixo e sem colisão", () => {
+    const codes = new Set(Array.from({ length: 200 }, () => generateParticipantCode()));
+    expect(codes.size).toBe(200);
+    for (const c of codes) {
+      expect(c.startsWith("LC-")).toBe(true);
+    }
   });
 });

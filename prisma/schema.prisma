@@ -14,13 +14,13 @@ datasource db {
 }
 
 model Client {
-  id                 String   @id @default(cuid())
-  name               String
-  slug               String   @unique
-  brandName          String   @default("Lucrattiva")
-  brandPrimaryColor  String   @default("#1D4429")
-  brandAccentColor   String   @default("#A97829")
-  createdAt          DateTime @default(now())
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  brandName         String   @default("Lucrattiva")
+  brandPrimaryColor String   @default("#1D4429")
+  brandAccentColor  String   @default("#A97829")
+  createdAt         DateTime @default(now())
 
   campaigns Campaign[]
 
@@ -32,8 +32,8 @@ model Campaign {
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
-  name        String
-  description String?
+  name         String
+  description  String?
   campaignType String  @default("evento") // evento | lancamento | promocao | institucional | geracao_leads | conteudo | sazonal
   status       String  @default("DISCOVERY") // DISCOVERY | PLANNING | ACTIVE | PAUSED | COMPLETED | CANCELLED
 
@@ -55,26 +55,31 @@ model Campaign {
   eventPrice    Float?
 
   // --- Público ---
-  audience          String?
-  audienceSegments  String  @default("[]") // JSON string[]
-  region            String?
+  audience         String?
+  audienceSegments String  @default("[]") // JSON string[]
+  region           String?
 
   // --- Meta ---
   targetResult      Int?
   targetMetricLabel String? // ex: "participantes presentes", "inscrições", "leads"
 
   // --- Orçamento (nunca assumido; null = não informado) ---
-  adBudget       Float?
-  creativeBudget Float?
-  physicalBudget Float?
-  partnerBudget  Float?
-  otherBudget    Float?
+  adBudget         Float?
+  creativeBudget   Float?
+  physicalBudget   Float?
+  partnerBudget    Float?
+  otherBudget      Float?
   budgetRangeLabel String? // faixa selecionada no wizard, ex: "R$500-1000", antes de valor exato
 
   // --- Oferta / CTA ---
   valueProposition String?
   cta              String?
   ctaLink          String?
+
+  // --- Landing page pública ---
+  landingSubtitle String? // linha de apoio abaixo do título na hero
+  bannerImageUrl  String? // imagem real do evento, se houver — sem isso, a
+  // página usa um banner gerado na identidade da marca
 
   // --- Canais e ativos disponíveis ---
   channels        String @default("[]") // JSON string[]
@@ -93,36 +98,36 @@ model Campaign {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tasks          Task[]
+  tasks           Task[]
   researchResults ResearchResult[]
-  strategyPlans  StrategyPlan[]
-  contentItems   ContentItem[]
-  creativeAssets CreativeAsset[]
-  trackingLinks  TrackingLink[]
-  qrCodes        QRCode[]
-  leads          Lead[]
-  registrations  Registration[]
-  partners       Partner[]
-  activityLogs   ActivityLog[]
-  approvals      Approval[]
-  aiUsages       AIUsage[]
-  chatMessages   ChatMessage[]
+  strategyPlans   StrategyPlan[]
+  contentItems    ContentItem[]
+  creativeAssets  CreativeAsset[]
+  trackingLinks   TrackingLink[]
+  qrCodes         QRCode[]
+  leads           Lead[]
+  registrations   Registration[]
+  partners        Partner[]
+  activityLogs    ActivityLog[]
+  approvals       Approval[]
+  aiUsages        AIUsage[]
+  chatMessages    ChatMessage[]
 
   @@map("campaigns")
 }
 
 model Task {
-  id          String @id @default(cuid())
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id])
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
 
   title           String
   description     String?
-  type            String  // research | strategy | content | creative | tracking | ads | whatsapp | physical | partner | analytics | other
-  assignedTo      String  @default("agente") // "agente" | "equipe" | nome de pessoa
-  status          String  @default("TODO") // TODO | IN_PROGRESS | WAITING_APPROVAL | BLOCKED | COMPLETED | CANCELLED
-  priority        String  @default("MEDIA") // ALTA | MEDIA | BAIXA
-  automationLevel String  @default("HUMAN") // AUTOMATIC | ASSISTED | HUMAN
+  type            String // research | strategy | content | creative | tracking | ads | whatsapp | physical | partner | analytics | other
+  assignedTo      String    @default("agente") // "agente" | "equipe" | nome de pessoa
+  status          String    @default("TODO") // TODO | IN_PROGRESS | WAITING_APPROVAL | BLOCKED | COMPLETED | CANCELLED
+  priority        String    @default("MEDIA") // ALTA | MEDIA | BAIXA
+  automationLevel String    @default("HUMAN") // AUTOMATIC | ASSISTED | HUMAN
   dueDate         DateTime?
 
   createdAt   DateTime  @default(now())
@@ -132,7 +137,7 @@ model Task {
 }
 
 model ResearchResult {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
@@ -141,7 +146,7 @@ model ResearchResult {
   url       String?
   summary   String
   category  String // FACTUAL | INFERRED | RECOMMENDATION
-  relevance String @default("MEDIA") // ALTA | MEDIA | BAIXA
+  relevance String  @default("MEDIA") // ALTA | MEDIA | BAIXA
 
   createdAt DateTime @default(now())
 
@@ -149,21 +154,21 @@ model ResearchResult {
 }
 
 model StrategyPlan {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  primaryAudience   String
-  secondaryAudiences String @default("[]") // JSON
-  valueProposition  String
-  keyMessage        String
-  secondaryMessages String  @default("[]") // JSON
-  channelStrategy   String  @default("[]") // JSON [{channel, role, cadence}]
-  funnel            String  @default("[]") // JSON [{stage, targetLabel, estimate?, isEstimate}]
-  calendar          String  @default("[]") // JSON [{date, theme, channel, format}]
-  kpis              String  @default("[]") // JSON [{label, target, isEstimate}]
-  budgetSuggestion  String  @default("{}") // JSON
-  contingencyPlan   String?
+  primaryAudience    String
+  secondaryAudiences String  @default("[]") // JSON
+  valueProposition   String
+  keyMessage         String
+  secondaryMessages  String  @default("[]") // JSON
+  channelStrategy    String  @default("[]") // JSON [{channel, role, cadence}]
+  funnel             String  @default("[]") // JSON [{stage, targetLabel, estimate?, isEstimate}]
+  calendar           String  @default("[]") // JSON [{date, theme, channel, format}]
+  kpis               String  @default("[]") // JSON [{label, target, isEstimate}]
+  budgetSuggestion   String  @default("{}") // JSON
+  contingencyPlan    String?
 
   createdAt DateTime @default(now())
 
@@ -171,7 +176,7 @@ model StrategyPlan {
 }
 
 model ContentItem {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
@@ -182,9 +187,9 @@ model ContentItem {
   body           String
   cta            String?
   targetAudience String?
-  status         String  @default("DRAFT") // DRAFT | PENDING_APPROVAL | APPROVED | SCHEDULED | PUBLISHED | REJECTED | ARCHIVED
+  status         String    @default("DRAFT") // DRAFT | PENDING_APPROVAL | APPROVED | SCHEDULED | PUBLISHED | REJECTED | ARCHIVED
   scheduledAt    DateTime?
-  generatedBy    String  @default("content_agent")
+  generatedBy    String    @default("content_agent")
   rejectionNote  String?
 
   createdAt DateTime @default(now())
@@ -196,9 +201,9 @@ model ContentItem {
 }
 
 model CreativeAsset {
-  id            String @id @default(cuid())
+  id            String       @id @default(cuid())
   campaignId    String
-  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  campaign      Campaign     @relation(fields: [campaignId], references: [id])
   contentItemId String?
   contentItem   ContentItem? @relation(fields: [contentItemId], references: [id])
 
@@ -215,17 +220,17 @@ model CreativeAsset {
 }
 
 model TrackingLink {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  source          String // instagram | facebook | whatsapp | radio | partner | flyer | qr | email | google
-  medium          String // social | cpc | message | print | referral
-  campaignTag     String // utm_campaign
-  content         String? // utm_content
-  destinationUrl  String
-  shortCode       String  @unique
-  clicks          Int     @default(0)
+  source         String // instagram | facebook | whatsapp | radio | partner | flyer | qr | email | google
+  medium         String // social | cpc | message | print | referral
+  campaignTag    String // utm_campaign
+  content        String? // utm_content
+  destinationUrl String
+  shortCode      String  @unique
+  clicks         Int     @default(0)
 
   createdAt DateTime @default(now())
 
@@ -235,9 +240,9 @@ model TrackingLink {
 }
 
 model QRCode {
-  id             String @id @default(cuid())
+  id             String        @id @default(cuid())
   campaignId     String
-  campaign       Campaign @relation(fields: [campaignId], references: [id])
+  campaign       Campaign      @relation(fields: [campaignId], references: [id])
   trackingLinkId String?
   trackingLink   TrackingLink? @relation(fields: [trackingLinkId], references: [id])
 
@@ -252,7 +257,7 @@ model QRCode {
 }
 
 model Lead {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
@@ -263,6 +268,37 @@ model Lead {
   source String? // origem: utm_source ou "manual"
   status String  @default("NEW") // NEW | INTERESTED | REGISTERED | CONFIRMED | ATTENDED | OPPORTUNITY | CUSTOMER
 
+  // --- Qualificação (credenciamento de evento) ---
+  company            String? // empresa
+  role               String? // cargo/função
+  segment            String? // produtor_rural | agronomo | gestor_fazenda | empresario | consultor | fornecedor | contador | outro
+  agroRelation       String? // "qual sua relação com o agro" — livre, opcional
+  decisionInfluence  Boolean? // participa/influencia decisões da propriedade
+  isExistingClient   String? // SIM | NAO | NAO_SEI
+  diagnosticInterest String? // SIM | QUERO_SABER_MAIS | NAO
+
+  // --- Consentimento LGPD (nunca assumido) ---
+  marketingConsent Boolean   @default(false) // comunicação futura — sempre opt-in explícito
+  consentVersion   String? // versão do texto de consentimento aceito
+  consentAt        DateTime?
+
+  // --- Origem detalhada (além de `source`) ---
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+
+  // --- Credenciamento físico ---
+  participantCode String? @unique // código curto para check-in (base do QR futuro)
+  giftStatus      String  @default("PENDING") // PENDING | PREPARED | DELIVERED
+  notes           String?
+
+  // --- Pós-evento (arquitetura preparada, sem fluxo ainda — REGRA do briefing) ---
+  postEventInterest   String?
+  diagnosticRequested Boolean?
+  followUpStatus      String?
+  followUpNotes       String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -272,14 +308,14 @@ model Lead {
 }
 
 model Registration {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
   leadId     String
-  lead       Lead   @relation(fields: [leadId], references: [id])
+  lead       Lead     @relation(fields: [leadId], references: [id])
 
   source      String?
-  status      String  @default("REGISTERED") // REGISTERED | CONFIRMED | ATTENDED | NO_SHOW | CANCELLED
+  status      String    @default("REGISTERED") // REGISTERED | CONFIRMED | REMINDER_SENT | CHECKED_IN | NO_SHOW | CANCELLED
   checkedInAt DateTime?
 
   createdAt DateTime @default(now())
@@ -288,18 +324,18 @@ model Registration {
 }
 
 model Partner {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  name              String
-  company           String?
-  phone             String?
-  email             String?
-  location          String?
-  type              String? // empresa | influenciador | produtor | entidade
-  status            String  @default("PROSPECT") // PROSPECT | CONTACTED | AGREED | MATERIAL_SENT | ACTIVE | COMPLETED
-  registrationsCount Int    @default(0)
+  name               String
+  company            String?
+  phone              String?
+  email              String?
+  location           String?
+  type               String? // empresa | influenciador | produtor | entidade
+  status             String  @default("PROSPECT") // PROSPECT | CONTACTED | AGREED | MATERIAL_SENT | ACTIVE | COMPLETED
+  registrationsCount Int     @default(0)
 
   createdAt DateTime @default(now())
 
@@ -307,12 +343,12 @@ model Partner {
 }
 
 model ActivityLog {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  agent      String // "research_agent" | "strategy_agent" | ... | "sistema" | "usuario"
-  action     String // descrição curta da ação
+  agent       String // "research_agent" | "strategy_agent" | ... | "sistema" | "usuario"
+  action      String // descrição curta da ação
   detailsJson String @default("{}")
 
   createdAt DateTime @default(now())
@@ -321,16 +357,16 @@ model ActivityLog {
 }
 
 model Approval {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  entityType String // content_item | creative_asset | ads_plan | whatsapp_batch | budget_change
-  entityId   String
-  level      String  @default("HUMAN_APPROVAL") // AUTOMATIC | ASSISTED | HUMAN_APPROVAL
-  status     String  @default("PENDING") // PENDING | APPROVED | REJECTED
-  summary    String
-  requestedBy String @default("sistema")
+  entityType  String // content_item | creative_asset | ads_plan | whatsapp_batch | budget_change
+  entityId    String
+  level       String    @default("HUMAN_APPROVAL") // AUTOMATIC | ASSISTED | HUMAN_APPROVAL
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  summary     String
+  requestedBy String    @default("sistema")
   decidedBy   String?
   decidedAt   DateTime?
 
@@ -340,7 +376,7 @@ model Approval {
 }
 
 model AIUsage {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 
@@ -356,7 +392,7 @@ model AIUsage {
 }
 
 model ChatMessage {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id])
 

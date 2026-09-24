@@ -34,6 +34,8 @@ export function makeCampaign(overrides: Partial<Campaign> = {}): Campaign {
     valueProposition: null,
     cta: null,
     ctaLink: null,
+    landingSubtitle: null,
+    bannerImageUrl: null,
     channels: "[]",
     assetsAvailable: "[]",
     constraints: "[]",

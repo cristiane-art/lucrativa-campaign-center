@@ -36,6 +36,8 @@ export interface SerializedCampaign {
   valueProposition: string | null;
   cta: string | null;
   ctaLink: string | null;
+  landingSubtitle: string | null;
+  bannerImageUrl: string | null;
   channels: string[];
   assetsAvailable: string[];
   constraints: string[];
@@ -79,6 +81,8 @@ export function serializeCampaign(c: Campaign): SerializedCampaign {
     valueProposition: c.valueProposition,
     cta: c.cta,
     ctaLink: c.ctaLink,
+    landingSubtitle: c.landingSubtitle,
+    bannerImageUrl: c.bannerImageUrl,
     channels: parseJsonArray<string>(c.channels),
     assetsAvailable: parseJsonArray<string>(c.assetsAvailable),
     constraints: parseJsonArray<string>(c.constraints),

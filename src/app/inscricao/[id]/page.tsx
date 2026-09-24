@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { RegistrationForm } from "@/components/RegistrationForm";
+import { EventBanner } from "@/components/EventBanner";
 import { BRAND } from "@/lib/brand";
 import { parseBriefingExtra } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function formatEventDate(date: Date | null) {
+  if (!date) return null;
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+}
 
 export default async function InscricaoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,39 +18,199 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
   if (!campaign) notFound();
 
   const extra = parseBriefingExtra(campaign.briefingExtra);
+  const dateLabel = formatEventDate(campaign.eventDate);
 
   return (
-    <main className="mx-auto min-h-screen max-w-2xl px-4 py-12">
-      <p className="text-center text-sm font-medium uppercase tracking-wide text-amber">{BRAND.fullName}</p>
-      <h1 className="mt-2 text-center font-display text-3xl font-semibold text-accent-strong">{campaign.name}</h1>
+    <main className="min-h-screen bg-bg">
+      {/* HERO */}
+      <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden text-center">
+        <div className="absolute inset-0">
+          {campaign.bannerImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={campaign.bannerImageUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <EventBanner className="h-full w-full" />
+          )}
+          {campaign.bannerImageUrl && (
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/85" />
+          )}
+        </div>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-muted">
-        {campaign.eventDate && (
-          <span>📅 {new Date(campaign.eventDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}</span>
-        )}
-        {campaign.eventTime && <span>🕐 {campaign.eventTime}</span>}
-        {campaign.eventLocation && <span>📍 {campaign.eventLocation}</span>}
-      </div>
+        <div className="relative z-10 mx-auto max-w-3xl px-5 py-24">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber">
+            {BRAND.fullName} · Agribusiness
+          </p>
+          <h1 className="mt-4 font-display text-4xl font-semibold leading-tight text-white sm:text-6xl">
+            {campaign.name}
+          </h1>
+          {campaign.landingSubtitle && (
+            <p className="mx-auto mt-5 max-w-xl text-base text-white/85 sm:text-lg">{campaign.landingSubtitle}</p>
+          )}
 
-      {campaign.valueProposition && <p className="mt-6 text-center text-ink">{campaign.valueProposition}</p>}
-      {extra.motivationProblem && <p className="mt-2 text-center text-sm text-muted">{extra.motivationProblem}</p>}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-white">
+            {dateLabel && (
+              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                📅 {dateLabel}
+              </span>
+            )}
+            {campaign.eventTime && (
+              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                🕐 {campaign.eventTime}
+              </span>
+            )}
+            {campaign.eventLocation && (
+              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                📍 {campaign.eventLocation}
+              </span>
+            )}
+          </div>
 
-      {extra.topics.length > 0 && (
-        <div className="mt-6">
-          <p className="mb-2 text-center text-sm font-medium text-ink">O que você vai encontrar:</p>
-          <ul className="mx-auto max-w-md space-y-1 text-sm text-muted">
-            {extra.topics.map((t) => (
-              <li key={t} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber" /> {t}
+          <a
+            href="#inscricao"
+            className="mt-10 inline-flex items-center justify-center rounded-lg bg-amber px-8 py-3.5 text-sm font-semibold uppercase tracking-wide text-[#12301c] shadow-lg transition-transform hover:scale-[1.02]"
+          >
+            {campaign.cta || "Quero participar"}
+          </a>
+
+          {campaign.eventCapacity && (
+            <p className="mt-4 text-xs uppercase tracking-wide text-white/60">
+              Vagas limitadas · encontro para até {campaign.eventCapacity} pessoas
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* POR QUE PARTICIPAR */}
+      {extra.valuePropositionBullets.length > 0 && (
+        <section className="mx-auto max-w-4xl px-5 py-20">
+          <h2 className="text-center font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
+            Por que participar
+          </h2>
+          {campaign.valueProposition && (
+            <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">{campaign.valueProposition}</p>
+          )}
+          <ul className="mx-auto mt-10 grid max-w-2xl gap-4 sm:grid-cols-2">
+            {extra.valuePropositionBullets.map((bullet) => (
+              <li key={bullet} className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-strong">
+                  ✓
+                </span>
+                <span className="text-sm text-ink">{bullet}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
-      <div className="mx-auto mt-10 max-w-md">
-        <RegistrationForm campaignId={campaign.id} ctaLabel={campaign.cta || "Inscrever-se"} />
-      </div>
+      {/* PARA QUEM É */}
+      {extra.audienceExamples.length > 0 && (
+        <section className="bg-surface-2 py-20">
+          <div className="mx-auto max-w-3xl px-5 text-center">
+            <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">Para quem é</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted">
+              Para quem participa das decisões que movem uma operação rural.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+              {extra.audienceExamples.map((a) => (
+                <span
+                  key={a}
+                  className="rounded-full border border-accent/30 bg-surface px-4 py-2 text-sm font-medium text-accent-strong"
+                >
+                  {a}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* RODA DE CONVERSA */}
+      {extra.speakers.length > 0 && (
+        <section className="mx-auto max-w-4xl px-5 py-20">
+          <h2 className="text-center font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
+            Roda de conversa
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">
+            Profissionais com mais de 20 anos de experiência, num formato próximo e sem enrolação.
+          </p>
+          <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
+            {extra.speakers.map((s) => (
+              <div key={s.name} className="rounded-2xl border border-border bg-surface p-6 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent-strong">
+                  {s.name.charAt(0)}
+                </div>
+                <p className="mt-4 font-display text-lg font-semibold text-ink">{s.name}</p>
+                {s.topicPending ? (
+                  <span className="mt-2 inline-block rounded-full bg-amber-soft px-3 py-1 text-xs font-medium text-amber">
+                    Tema em definição
+                  </span>
+                ) : (
+                  <p className="mt-2 text-sm text-muted">{s.specialty}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* PROGRAMAÇÃO / NETWORKING */}
+      {extra.schedule.length > 0 && (
+        <section className="bg-accent-strong py-20 text-white">
+          <div className="mx-auto max-w-2xl px-5">
+            <h2 className="text-center font-display text-2xl font-semibold sm:text-3xl">Programação</h2>
+            <div className="mt-10 space-y-0">
+              {extra.schedule.map((item, i) => (
+                <div key={i} className="flex gap-5 border-l-2 border-amber/40 pb-8 pl-6 last:pb-0">
+                  <div className="relative -ml-[29px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber text-xs font-bold text-[#12301c]">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="font-display text-base font-semibold text-amber">{item.time}</p>
+                    <p className="mt-0.5 text-sm text-white/85">{item.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {extra.networkingHighlight && (
+              <p className="mt-4 text-center text-sm text-white/70">{extra.networkingHighlight}</p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* DIAGNÓSTICO */}
+      {extra.diagnosticDescription && (
+        <section className="mx-auto max-w-2xl px-5 py-20 text-center">
+          <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
+            Diagnóstico gratuito
+          </h2>
+          <p className="mt-4 text-sm text-ink">{extra.diagnosticDescription}</p>
+          {extra.diagnosticPending && (
+            <p className="mt-3 text-xs text-muted">Os detalhes de como funciona serão confirmados em breve.</p>
+          )}
+        </section>
+      )}
+
+      {/* CTA FINAL + FORMULÁRIO */}
+      <section id="inscricao" className="bg-surface-2 px-5 py-20">
+        <div className="mx-auto max-w-md text-center">
+          <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
+            {campaign.cta || "Quero participar"}
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            {campaign.eventCapacity
+              ? `Vagas limitadas a ${campaign.eventCapacity} pessoas — leva menos de 1 minuto.`
+              : "Leva menos de 1 minuto."}
+          </p>
+        </div>
+        <div className="mx-auto mt-8 max-w-md">
+          <RegistrationForm campaignId={campaign.id} ctaLabel={campaign.cta || "Quero participar"} />
+        </div>
+      </section>
+
+      <footer className="px-5 py-8 text-center text-xs text-muted">
+        {BRAND.fullName} · {campaign.eventLocation}
+      </footer>
     </main>
   );
 }

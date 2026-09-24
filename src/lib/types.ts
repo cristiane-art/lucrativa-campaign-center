@@ -79,10 +79,45 @@ export const LeadStatusSchema = z.enum(LEAD_STATUSES);
 export const REGISTRATION_STATUSES = [
   "REGISTERED",
   "CONFIRMED",
-  "ATTENDED",
+  "REMINDER_SENT",
+  "CHECKED_IN",
   "NO_SHOW",
   "CANCELLED",
 ] as const;
+export const RegistrationStatusSchema = z.enum(REGISTRATION_STATUSES);
+
+// --- Qualificação do participante (credenciamento de evento) ---
+
+export const PARTICIPANT_SEGMENTS = [
+  "PRODUTOR_RURAL",
+  "AGRONOMO",
+  "GESTOR_FAZENDA",
+  "EMPRESARIO",
+  "CONSULTOR",
+  "FORNECEDOR",
+  "CONTADOR",
+  "OUTRO",
+] as const;
+export const ParticipantSegmentSchema = z.enum(PARTICIPANT_SEGMENTS);
+export const PARTICIPANT_SEGMENT_LABELS: Record<(typeof PARTICIPANT_SEGMENTS)[number], string> = {
+  PRODUTOR_RURAL: "Produtor rural",
+  AGRONOMO: "Agrônomo",
+  GESTOR_FAZENDA: "Gestor de fazenda",
+  EMPRESARIO: "Empresário",
+  CONSULTOR: "Consultor",
+  FORNECEDOR: "Fornecedor",
+  CONTADOR: "Contador",
+  OUTRO: "Outro",
+};
+
+export const EXISTING_CLIENT_OPTIONS = ["SIM", "NAO", "NAO_SEI"] as const;
+export const DIAGNOSTIC_INTEREST_OPTIONS = ["SIM", "QUERO_SABER_MAIS", "NAO"] as const;
+export const GIFT_STATUSES = ["PENDING", "PREPARED", "DELIVERED"] as const;
+
+// Versão do texto de consentimento exibido no formulário público — mude este
+// valor sempre que o texto mudar, para saber qual versão cada participante
+// aceitou (REGRA LGPD do briefing).
+export const CONSENT_VERSION = "2026-09-v1";
 
 export const PARTNER_STATUSES = [
   "PROSPECT",
@@ -174,8 +209,17 @@ export const SpeakerSchema = z.object({
   social: z.string().optional(),
   bio: z.string().optional(),
   photoUrl: z.string().optional(),
+  // true quando o tema ainda não foi definido — a UI mostra "tema em
+  // definição" em vez de inventar um assunto para o palestrante.
+  topicPending: z.boolean().optional(),
 });
 export type Speaker = z.infer<typeof SpeakerSchema>;
+
+export const ScheduleItemSchema = z.object({
+  time: z.string(), // "18:30"
+  label: z.string(), // "Início da roda de conversa"
+});
+export type ScheduleItem = z.infer<typeof ScheduleItemSchema>;
 
 export const CampaignHistorySchema = z.object({
   hadSimilar: z.boolean().optional(),
@@ -208,6 +252,16 @@ export const CampaignBriefingExtraSchema = z.object({
   // campos que o usuário explicitamente disse "não sei" — não bloqueiam a
   // confirmação, mas continuam listados como pendência leve (RECOMMENDED)
   unknownFields: z.array(z.string()).default([]),
+
+  // --- Landing page de credenciamento de evento ---
+  schedule: z.array(ScheduleItemSchema).default([]), // programação do dia
+  valuePropositionBullets: z.array(z.string()).default([]), // "por que participar"
+  audienceExamples: z.array(z.string()).default([]), // "para quem é"
+  networkingHighlight: z.string().optional(), // ex: "20:30 · Churrasco e networking"
+  diagnosticDescription: z.string().optional(),
+  // true quando o mecanismo exato do diagnóstico ainda não foi confirmado —
+  // a landing page avisa isso em vez de inventar como ele funciona.
+  diagnosticPending: z.boolean().default(false),
 });
 export type CampaignBriefingExtra = z.infer<typeof CampaignBriefingExtraSchema>;
 
