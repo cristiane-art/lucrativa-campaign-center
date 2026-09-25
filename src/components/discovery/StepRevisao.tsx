@@ -59,7 +59,7 @@ export function StepRevisao({
       </div>
 
       {completeness.missing.length > 0 ? (
-        <div className="rounded-lg bg-red/10 p-3">
+        <div className="rounded-lg bg-[color-mix(in_srgb,var(--red)_10%,transparent)] p-3">
           <p className="mb-2 text-sm font-medium text-red">Ainda faltam informações obrigatórias:</p>
           <div className="flex flex-wrap gap-2">
             {completeness.missing.map((f) => (
@@ -83,7 +83,7 @@ export function StepRevisao({
         </p>
       )}
 
-      {error && <div className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">{error}</div>}
+      {error && <div className="rounded-lg bg-[color-mix(in_srgb,var(--red)_10%,transparent)] px-3 py-2 text-sm text-red">{error}</div>}
 
       <Button onClick={onConfirm} disabled={completeness.missing.length > 0 || confirming} className="w-full">
         {confirming ? "Confirmando e executando agentes..." : "Confirmar e criar campanha"}

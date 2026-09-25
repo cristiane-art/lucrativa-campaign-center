@@ -115,7 +115,7 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
               {extra.audienceExamples.map((a) => (
                 <span
                   key={a}
-                  className="rounded-full border border-accent/30 bg-surface px-4 py-2 text-sm font-medium text-accent-strong"
+                  className="rounded-full border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-surface px-4 py-2 text-sm font-medium text-accent-strong"
                 >
                   {a}
                 </span>
@@ -171,10 +171,14 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
         <section className="bg-accent-strong py-20 text-white">
           <div className="mx-auto max-w-2xl px-5">
             <h2 className="text-center font-display text-2xl font-semibold sm:text-3xl">Programação</h2>
-            <div className="mt-10 space-y-0">
+            <div className="relative mt-10 space-y-8">
+              <div
+                className="absolute inset-y-3 left-3 w-px bg-[color-mix(in_srgb,var(--amber)_40%,transparent)]"
+                aria-hidden
+              />
               {extra.schedule.map((item, i) => (
-                <div key={i} className="flex gap-5 border-l-2 border-amber/40 pb-8 pl-6 last:pb-0">
-                  <div className="relative -ml-[29px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber text-xs font-bold text-[#12301c]">
+                <div key={i} className="relative flex items-start gap-5">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber text-xs font-bold text-[#12301c]">
                     {i + 1}
                   </div>
                   <div>

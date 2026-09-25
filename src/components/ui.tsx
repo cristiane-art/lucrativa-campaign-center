@@ -64,7 +64,7 @@ export function Badge({ children, tone = "neutral" }: { children: ReactNode; ton
     neutral: "bg-surface-2 text-ink",
     accent: "bg-accent-soft text-accent-strong",
     amber: "bg-amber-soft text-amber",
-    red: "bg-red/10 text-red",
+    red: "bg-[color-mix(in_srgb,var(--red)_10%,transparent)] text-red",
     muted: "bg-surface-2 text-muted",
   };
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>;

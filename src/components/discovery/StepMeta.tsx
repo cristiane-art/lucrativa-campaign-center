@@ -39,7 +39,7 @@ export function StepMeta({ campaign, patch }: StepProps) {
       </label>
 
       {campaign.eventCapacity && campaign.targetResult && campaign.targetResult > campaign.eventCapacity && (
-        <div className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
+        <div className="rounded-lg bg-[color-mix(in_srgb,var(--red)_10%,transparent)] px-3 py-2 text-sm text-red">
           ⚠️ Existe uma inconsistência: a meta ({campaign.targetResult}) é maior que a capacidade do evento (
           {campaign.eventCapacity}). Ajuste um dos dois quando puder.
         </div>
