@@ -124,6 +124,17 @@ export function CredentialingBoard({
     load();
   }
 
+  async function removeLead(lead: Lead) {
+    if (!confirm(`Excluir "${lead.name}" e sua inscrição? Essa ação não pode ser desfeita.`)) return;
+    const res = await fetch(`/api/leads/${lead.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Não foi possível excluir.");
+      return;
+    }
+    load();
+  }
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <DashboardNav campaignId={campaignId} campaignName={campaignName} status={status} />
@@ -214,12 +225,13 @@ export function CredentialingBoard({
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2">Diagnóstico</th>
                 <th className="px-4 py-2">Inscrito em</th>
+                <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-6 text-center text-muted">
+                  <td colSpan={11} className="px-4 py-6 text-center text-muted">
                     Nenhum participante com esse filtro.
                   </td>
                 </tr>
@@ -242,6 +254,15 @@ export function CredentialingBoard({
                   </td>
                   <td className="px-4 py-2 text-muted">{l.diagnosticInterest ?? "—"}</td>
                   <td className="px-4 py-2 text-muted">{new Date(l.createdAt).toLocaleDateString("pt-BR")}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      onClick={() => removeLead(l)}
+                      className="text-xs font-medium text-red hover:underline"
+                      title="Excluir participante"
+                    >
+                      Excluir
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

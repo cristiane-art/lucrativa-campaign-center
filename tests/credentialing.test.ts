@@ -58,4 +58,19 @@ describe("Credenciamento — participante e check-in", () => {
     expect(lead.marketingConsent).toBe(false);
     expect(lead.consentAt).toBeNull();
   });
+
+  it("excluir um lead também remove a inscrição vinculada (pedido de exclusão de dados)", async () => {
+    const lead = await db.lead.create({
+      data: { campaignId, name: "Pedro", phone: "65955556666", participantCode: generateParticipantCode() },
+    });
+    await db.registration.create({ data: { campaignId, leadId: lead.id, status: "REGISTERED" } });
+
+    await db.$transaction([
+      db.registration.deleteMany({ where: { leadId: lead.id } }),
+      db.lead.delete({ where: { id: lead.id } }),
+    ]);
+
+    expect(await db.lead.findUnique({ where: { id: lead.id } })).toBeNull();
+    expect(await db.registration.count({ where: { leadId: lead.id } })).toBe(0);
+  });
 });
