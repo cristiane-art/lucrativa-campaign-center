@@ -12,11 +12,14 @@ export function SectionDivider({
   flip?: boolean;
 }) {
   return (
-    <div className="relative h-14 w-full overflow-hidden sm:h-20" style={{ backgroundColor: fromColor }}>
+    <div
+      className="relative -my-px h-14 w-full overflow-hidden sm:h-20"
+      style={{ backgroundColor: fromColor }}
+    >
       <svg
         viewBox="0 0 1600 120"
         preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
+        className="absolute -inset-y-px inset-x-0 h-[calc(100%+2px)] w-full"
         style={{ transform: flip ? "scaleY(-1)" : undefined }}
         aria-hidden="true"
       >
