@@ -37,6 +37,16 @@ export function EventBanner({ className = "" }: { className?: string }) {
           <stop offset="0%" stopColor="#0a1710" stopOpacity="0" />
           <stop offset="100%" stopColor="#0a1710" stopOpacity="0.92" />
         </linearGradient>
+
+        {/* folha trifoliada (formato da folha da soja) — uma "carta" repetida
+            vira planta, planta repetida vira lavoura */}
+        <path id="leaflet" d="M0,0 C-9,-16 -9,-36 0,-48 C9,-36 9,-16 0,0 Z" />
+        <g id="soyLeaf">
+          <line x1="0" y1="0" x2="0" y2="16" stroke={BRAND.colors.amber} strokeWidth="2" />
+          <use href="#leaflet" transform="rotate(-36)" />
+          <use href="#leaflet" />
+          <use href="#leaflet" transform="rotate(36)" />
+        </g>
       </defs>
 
       <rect width="1600" height="900" fill="url(#sky)" />
@@ -55,22 +65,24 @@ export function EventBanner({ className = "" }: { className?: string }) {
         fill="url(#field2)"
       />
 
-      {/* fileiras de plantação — traços finos e repetidos, evocando sulcos */}
-      <g stroke={BRAND.colors.amber} strokeOpacity="0.18" strokeWidth="2">
+      {/* fileiras de folhas de soja, evocando sulcos plantados — mais
+          nítidas perto do centro, que é a faixa que sobra visível em telas
+          estreitas (o SVG corta as laterais pra preencher o celular) */}
+      <g fill={BRAND.colors.amber} stroke="none">
         {Array.from({ length: 14 }).map((_, i) => {
           const x = 60 + i * 115;
-          return <path key={i} d={`M${x},900 L${x + 260},640`} />;
+          const centerBoost = Math.max(0, 1 - Math.abs(i - 6.5) / 6.5); // 1 no centro, 0 nas pontas
+          const scale = 0.8 + (i % 3) * 0.1 + centerBoost * 0.5;
+          const opacity = 0.22 + centerBoost * 0.35;
+          return (
+            <use
+              key={i}
+              href="#soyLeaf"
+              opacity={opacity}
+              transform={`translate(${x}, ${850 - (i % 4) * 14}) scale(${scale})`}
+            />
+          );
         })}
-      </g>
-
-      {/* espigas estilizadas nas bordas */}
-      <g fill={BRAND.colors.amber} opacity="0.5">
-        <ellipse cx="90" cy="760" rx="5" ry="16" />
-        <ellipse cx="105" cy="740" rx="5" ry="16" />
-        <ellipse cx="75" cy="742" rx="5" ry="16" />
-        <ellipse cx="1500" cy="780" rx="5" ry="16" />
-        <ellipse cx="1515" cy="758" rx="5" ry="16" />
-        <ellipse cx="1485" cy="760" rx="5" ry="16" />
       </g>
 
       {/* desvanece para o rodapé, garante contraste pro texto sobreposto */}
