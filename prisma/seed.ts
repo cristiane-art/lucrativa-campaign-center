@@ -41,7 +41,7 @@ async function main() {
         specialty: "Custo de produzir para o produtor rural",
       },
       {
-        name: "Aline",
+        name: "Aline Ramos",
         specialty: "Custo de produzir sob a ótica do mercado imobiliário rural",
       },
     ],
@@ -79,6 +79,9 @@ async function main() {
       "Ao longo da conversa, você pode receber um diagnóstico gratuito da situação atual da sua operação.",
     diagnosticPending: true, // mecânica exata ainda não confirmada — nunca inventar
     unknownFields: ["targetResult", "budget", "eventIsPaid"],
+    // Capacidade real é 80 (Campaign.eventCapacity, usada no painel interno);
+    // a landing pública mostra 40 de propósito, como tática de exclusividade.
+    landingCapacityLabel: 40,
   };
 
   const data = {
@@ -92,7 +95,7 @@ async function main() {
     eventTime: "18:30 às 21:30",
     eventLocation: "Condomínio Village",
     eventFormat: "presencial",
-    eventCapacity: 40,
+    eventCapacity: 80,
     audience:
       "Agrônomos, gestores de propriedades, produtores rurais, empresários do agro e profissionais que participam ou influenciam decisões dentro das propriedades",
     region: "Nova Mutum e região",
@@ -122,17 +125,16 @@ async function main() {
   });
   console.log(`Pendências obrigatórias restantes: ${completeness.missing.join(", ") || "nenhuma"}`);
 
-  // Tema da Aline foi confirmado — remove a tarefa antiga que cobria tema + sobrenome juntos.
+  // Tema e sobrenome da Aline confirmados — remove as tarefas antigas que cobriam isso.
   await db.task.deleteMany({
-    where: { campaignId: campaign.id, title: "Confirmar sobrenome e tema da palestra da Aline" },
+    where: {
+      campaignId: campaign.id,
+      title: { in: ["Confirmar sobrenome e tema da palestra da Aline", "Confirmar sobrenome da Aline"] },
+    },
   });
 
   // Pendências explícitas do briefing — nunca inventadas, viram tarefa humana.
   const pendingTasks = [
-    {
-      title: "Confirmar sobrenome da Aline",
-      description: "Tema já confirmado (mercado imobiliário rural) — falta só o sobrenome para exibir na landing page.",
-    },
     {
       title: "Confirmar exatamente como funciona o diagnóstico gratuito",
       description: "Antes de divulgar detalhes do diagnóstico, confirmar a mecânica real com a equipe.",

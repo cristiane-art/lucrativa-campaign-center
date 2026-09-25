@@ -262,6 +262,11 @@ export const CampaignBriefingExtraSchema = z.object({
   // true quando o mecanismo exato do diagnóstico ainda não foi confirmado —
   // a landing page avisa isso em vez de inventar como ele funciona.
   diagnosticPending: z.boolean().default(false),
+  // Número de vagas mostrado na landing page pública — pode ser menor que
+  // Campaign.eventCapacity (a capacidade real, usada no painel interno) de
+  // propósito, como tática de exclusividade. Quando ausente, a landing usa
+  // Campaign.eventCapacity normalmente.
+  landingCapacityLabel: z.number().int().positive().optional(),
 });
 export type CampaignBriefingExtra = z.infer<typeof CampaignBriefingExtraSchema>;
 

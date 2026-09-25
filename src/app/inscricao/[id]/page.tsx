@@ -19,6 +19,7 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
 
   const extra = parseBriefingExtra(campaign.briefingExtra);
   const dateLabel = formatEventDate(campaign.eventDate);
+  const displayCapacity = extra.landingCapacityLabel ?? campaign.eventCapacity;
 
   return (
     <main className="min-h-screen bg-bg">
@@ -72,9 +73,9 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
             {campaign.cta || "Quero participar"}
           </a>
 
-          {campaign.eventCapacity && (
+          {displayCapacity && (
             <p className="mt-4 text-xs uppercase tracking-wide text-white/60">
-              Vagas limitadas · encontro para até {campaign.eventCapacity} pessoas
+              Vagas limitadas · encontro para até {displayCapacity} pessoas
             </p>
           )}
         </div>
@@ -210,8 +211,8 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
             {campaign.cta || "Quero participar"}
           </h2>
           <p className="mt-2 text-sm text-muted">
-            {campaign.eventCapacity
-              ? `Vagas limitadas a ${campaign.eventCapacity} pessoas — leva menos de 1 minuto.`
+            {displayCapacity
+              ? `Vagas limitadas a ${displayCapacity} pessoas — leva menos de 1 minuto.`
               : "Leva menos de 1 minuto."}
           </p>
         </div>
