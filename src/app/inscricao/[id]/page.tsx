@@ -133,12 +133,24 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">
             Profissionais com mais de 20 anos de experiência, num formato próximo e sem enrolação.
           </p>
-          <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
+          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-5">
             {extra.speakers.map((s) => (
-              <div key={s.name} className="rounded-2xl border border-border bg-surface p-6 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent-strong">
-                  {s.name.charAt(0)}
-                </div>
+              <div
+                key={s.name}
+                className="w-full rounded-2xl border border-border bg-surface p-6 text-center sm:w-[calc(50%-0.625rem)]"
+              >
+                {s.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.photoUrl}
+                    alt={s.name}
+                    className="mx-auto h-16 w-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent-strong">
+                    {s.name.charAt(0)}
+                  </div>
+                )}
                 <p className="mt-4 font-display text-lg font-semibold text-ink">{s.name}</p>
                 {s.topicPending ? (
                   <span className="mt-2 inline-block rounded-full bg-amber-soft px-3 py-1 text-xs font-medium text-amber">

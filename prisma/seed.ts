@@ -42,7 +42,7 @@ async function main() {
       },
       {
         name: "Aline",
-        topicPending: true,
+        specialty: "Custo de produzir sob a ótica do mercado imobiliário rural",
       },
     ],
     topics: [
@@ -75,7 +75,6 @@ async function main() {
       "Empresários do agro",
       "Profissionais que participam ou influenciam decisões dentro das fazendas",
     ],
-    networkingHighlight: "20:30 · Churrasco e networking",
     diagnosticDescription:
       "Ao longo da conversa, você pode receber um diagnóstico gratuito da situação atual da sua operação.",
     diagnosticPending: true, // mecânica exata ainda não confirmada — nunca inventar
@@ -123,11 +122,16 @@ async function main() {
   });
   console.log(`Pendências obrigatórias restantes: ${completeness.missing.join(", ") || "nenhuma"}`);
 
+  // Tema da Aline foi confirmado — remove a tarefa antiga que cobria tema + sobrenome juntos.
+  await db.task.deleteMany({
+    where: { campaignId: campaign.id, title: "Confirmar sobrenome e tema da palestra da Aline" },
+  });
+
   // Pendências explícitas do briefing — nunca inventadas, viram tarefa humana.
   const pendingTasks = [
     {
-      title: "Confirmar sobrenome e tema da palestra da Aline",
-      description: "O briefing do evento não definiu o tema dela ainda — não inventar.",
+      title: "Confirmar sobrenome da Aline",
+      description: "Tema já confirmado (mercado imobiliário rural) — falta só o sobrenome para exibir na landing page.",
     },
     {
       title: "Confirmar exatamente como funciona o diagnóstico gratuito",
