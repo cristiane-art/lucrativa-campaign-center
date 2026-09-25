@@ -119,7 +119,7 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
 
   if (status === "done" || status === "duplicate") {
     return (
-      <Card className="p-6 text-center">
+      <Card className="p-6 text-center shadow-xl shadow-black/10">
         <p className="font-display text-lg font-semibold text-accent-strong">
           {status === "duplicate" ? "Você já possui uma inscrição para este evento." : "Inscrição confirmada!"}
         </p>
@@ -133,7 +133,7 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 shadow-xl shadow-black/10">
       <form onSubmit={submit} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">

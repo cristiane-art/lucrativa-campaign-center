@@ -2,8 +2,30 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { EventBanner } from "@/components/EventBanner";
+import { SectionDivider } from "@/components/SectionDivider";
 import { BRAND } from "@/lib/brand";
 import { parseBriefingExtra } from "@/lib/types";
+import {
+  IconCalendar,
+  IconChat,
+  IconCheck,
+  IconClock,
+  IconFood,
+  IconLeaf,
+  IconMic,
+  IconPin,
+  IconSparkle,
+  IconUsers,
+} from "@/components/icons";
+
+function scheduleIcon(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("churrasco") || l.includes("jantar") || l.includes("almoço")) return IconFood;
+  if (l.includes("pergunta")) return IconChat;
+  if (l.includes("networking")) return IconUsers;
+  if (l.includes("início") || l.includes("inicio") || l.includes("abertura")) return IconMic;
+  return IconUsers;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -50,18 +72,21 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-white">
             {dateLabel && (
-              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
-                📅 {dateLabel}
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                <IconCalendar className="h-4 w-4 text-amber" />
+                {dateLabel}
               </span>
             )}
             {campaign.eventTime && (
-              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
-                🕐 {campaign.eventTime}
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                <IconClock className="h-4 w-4 text-amber" />
+                {campaign.eventTime}
               </span>
             )}
             {campaign.eventLocation && (
-              <span className="rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
-                📍 {campaign.eventLocation}
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                <IconPin className="h-4 w-4 text-amber" />
+                {campaign.eventLocation}
               </span>
             )}
           </div>
@@ -80,10 +105,11 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           )}
         </div>
       </section>
+      <SectionDivider fromColor="var(--accent-strong)" toColor="var(--bg)" />
 
       {/* POR QUE PARTICIPAR */}
       {extra.valuePropositionBullets.length > 0 && (
-        <section className="mx-auto max-w-4xl px-5 py-20">
+        <section className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
           <h2 className="text-center font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
             Por que participar
           </h2>
@@ -92,9 +118,12 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           )}
           <ul className="mx-auto mt-10 grid max-w-2xl gap-4 sm:grid-cols-2">
             {extra.valuePropositionBullets.map((bullet) => (
-              <li key={bullet} className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-strong">
-                  ✓
+              <li
+                key={bullet}
+                className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong">
+                  <IconCheck className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm text-ink">{bullet}</span>
               </li>
@@ -105,7 +134,7 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
 
       {/* PARA QUEM É */}
       {extra.audienceExamples.length > 0 && (
-        <section className="bg-surface-2 py-20">
+        <section className="bg-surface-2 py-16 sm:py-20">
           <div className="mx-auto max-w-3xl px-5 text-center">
             <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">Para quem é</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-muted">
@@ -124,10 +153,11 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           </div>
         </section>
       )}
+      <SectionDivider fromColor="var(--surface-2)" toColor="var(--bg)" flip />
 
       {/* RODA DE CONVERSA */}
       {extra.speakers.length > 0 && (
-        <section className="mx-auto max-w-4xl px-5 py-20">
+        <section className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
           <h2 className="text-center font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
             Roda de conversa
           </h2>
@@ -138,8 +168,13 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
             {extra.speakers.map((s) => (
               <div
                 key={s.name}
-                className="w-full rounded-2xl border border-border bg-surface p-6 text-center sm:w-[calc(50%-0.625rem)]"
+                className="relative w-full overflow-hidden rounded-2xl border border-border bg-surface p-6 text-center shadow-sm transition-shadow hover:shadow-md sm:w-[calc(50%-0.625rem)]"
               >
+                <span
+                  className="absolute inset-x-0 top-0 h-1"
+                  style={{ background: "linear-gradient(90deg, var(--accent), var(--amber))" }}
+                  aria-hidden
+                />
                 {s.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -165,28 +200,32 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           </div>
         </section>
       )}
+      {extra.schedule.length > 0 && <SectionDivider fromColor="var(--bg)" toColor="var(--accent-strong)" />}
 
       {/* PROGRAMAÇÃO / NETWORKING */}
       {extra.schedule.length > 0 && (
-        <section className="bg-accent-strong py-20 text-white">
+        <section className="bg-accent-strong py-16 text-white sm:py-20">
           <div className="mx-auto max-w-2xl px-5">
             <h2 className="text-center font-display text-2xl font-semibold sm:text-3xl">Programação</h2>
             <div className="relative mt-10 space-y-8">
               <div
-                className="absolute inset-y-3 left-3 w-px bg-[color-mix(in_srgb,var(--amber)_40%,transparent)]"
+                className="absolute inset-y-3 left-4 w-px bg-[color-mix(in_srgb,var(--amber)_40%,transparent)]"
                 aria-hidden
               />
-              {extra.schedule.map((item, i) => (
-                <div key={i} className="relative flex items-start gap-5">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber text-xs font-bold text-[#12301c]">
-                    {i + 1}
+              {extra.schedule.map((item, i) => {
+                const Icon = scheduleIcon(item.label);
+                return (
+                  <div key={i} className="relative flex items-start gap-5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber text-[#12301c]">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-display text-base font-semibold text-amber">{item.time}</p>
+                      <p className="mt-0.5 text-sm text-white/85">{item.label}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-display text-base font-semibold text-amber">{item.time}</p>
-                    <p className="mt-0.5 text-sm text-white/85">{item.label}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             {extra.networkingHighlight && (
               <p className="mt-4 text-center text-sm text-white/70">{extra.networkingHighlight}</p>
@@ -194,22 +233,30 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           </div>
         </section>
       )}
+      {extra.schedule.length > 0 && <SectionDivider fromColor="var(--accent-strong)" toColor="var(--bg)" flip />}
 
       {/* DIAGNÓSTICO */}
       {extra.diagnosticDescription && (
-        <section className="mx-auto max-w-2xl px-5 py-20 text-center">
-          <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
-            Diagnóstico gratuito
-          </h2>
-          <p className="mt-4 text-sm text-ink">{extra.diagnosticDescription}</p>
-          {extra.diagnosticPending && (
-            <p className="mt-3 text-xs text-muted">Os detalhes de como funciona serão confirmados em breve.</p>
-          )}
+        <section className="mx-auto max-w-2xl px-5 py-16 sm:py-20">
+          <div className="rounded-2xl border border-[color-mix(in_srgb,var(--amber)_35%,transparent)] bg-[color-mix(in_srgb,var(--amber)_7%,var(--surface))] p-8 text-center shadow-sm">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-soft text-amber">
+              <IconSparkle className="h-6 w-6" />
+            </div>
+            <h2 className="mt-4 font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
+              Diagnóstico gratuito
+            </h2>
+            <p className="mt-4 text-sm text-ink">{extra.diagnosticDescription}</p>
+            {extra.diagnosticPending && (
+              <p className="mt-3 text-xs text-muted">Os detalhes de como funciona serão confirmados em breve.</p>
+            )}
+          </div>
         </section>
       )}
 
+      <SectionDivider fromColor="var(--bg)" toColor="var(--surface-2)" />
+
       {/* CTA FINAL + FORMULÁRIO */}
-      <section id="inscricao" className="bg-surface-2 px-5 py-20">
+      <section id="inscricao" className="bg-surface-2 px-5 py-16 sm:py-20">
         <div className="mx-auto max-w-md text-center">
           <h2 className="font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
             {campaign.cta || "Quero participar"}
@@ -225,7 +272,8 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
         </div>
       </section>
 
-      <footer className="px-5 py-8 text-center text-xs text-muted">
+      <footer className="flex items-center justify-center gap-2 bg-surface-2 px-5 pb-8 text-center text-xs text-muted">
+        <IconLeaf className="h-3.5 w-3.5 text-accent" />
         {BRAND.fullName} · {campaign.eventLocation}
       </footer>
     </main>
