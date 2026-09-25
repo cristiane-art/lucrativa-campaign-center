@@ -6,7 +6,7 @@ import { TEST_DB_URL } from "./testDb";
 export default function globalSetup() {
   execSync("npx prisma db push --skip-generate --accept-data-loss", {
     cwd: __dirname + "/..",
-    env: { ...process.env, DATABASE_URL: TEST_DB_URL, DIRECT_URL: TEST_DB_URL },
+    env: { ...process.env, DATABASE_POSTGRES_URL: TEST_DB_URL },
     stdio: "inherit",
   });
 }

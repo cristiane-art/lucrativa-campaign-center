@@ -9,7 +9,7 @@ gerenciado (Neon, Vercel Postgres, Supabase).
 
 ```bash
 npm install
-cp .env.example .env        # ajuste DATABASE_URL/DIRECT_URL e ANTHROPIC_API_KEY
+cp .env.example .env        # ajuste DATABASE_POSTGRES_URL e ANTHROPIC_API_KEY
 npm run db:push             # aplica o schema no Postgres apontado
 npm run db:seed             # cria o tenant Lucrattiva + a campanha do evento
 npm run dev                 # http://localhost:3000
@@ -40,9 +40,10 @@ Caminho recomendado para colocar o link de inscrição no ar. ~15-20 minutos.
 
 - No painel da [Vercel](https://vercel.com) → seu projeto (crie um projeto vazio se
   ainda não importou o repositório) → aba **Storage** → **Create Database** → escolha
-  **Postgres** (é a integração com a Neon por baixo) → crie no plano gratuito.
-- Alternativa equivalente: criar direto em [neon.tech](https://neon.tech) (gratuito) e
-  colar as URLs manualmente — o passo 3 é o mesmo.
+  **Prisma Postgres** (plano gratuito).
+- Ao conectar o banco ao projeto ("Connect to Project"), use o prefixo `DATABASE` em
+  **Custom Environment Variable Prefix** — isso cria a variável `DATABASE_POSTGRES_URL`
+  que o `schema.prisma` espera (ver tabela do passo 3).
 
 **2. Importe o repositório**
 
@@ -57,8 +58,7 @@ Em **Settings → Environment Variables** do projeto na Vercel:
 
 | Variável | De onde vem |
 |---|---|
-| `DATABASE_URL` | Se você criou o Postgres pela própria Vercel (passo 1), ela **já preenche isso sozinha**. Se usou Neon direto, cole a connection string com `?sslmode=require` |
-| `DIRECT_URL` | Mesma origem — Vercel Postgres/Neon dão uma URL "não-pooled" separada (geralmente `POSTGRES_URL_NON_POOLING` ou similar no painel da integração); copie o valor dela para `DIRECT_URL` |
+| `DATABASE_POSTGRES_URL` | Criada sozinha pela integração **Prisma Postgres** (Storage → Create Database → conecte ao projeto com o prefixo `DATABASE`). **Não** use a `DATABASE_URL` que a mesma integração cria — essa é a conexão via Prisma Accelerate (`prisma+postgres://...`), que exige o pacote `@prisma/extension-accelerate`; este projeto usa `PrismaClient` puro, então schema.prisma aponta para `DATABASE_POSTGRES_URL` (a conexão Postgres direta) tanto em `url` quanto em `directUrl` |
 | `ANTHROPIC_API_KEY` | https://console.anthropic.com/settings/keys — opcional, sem ela os agentes de IA ficam pausados |
 | `DASHBOARD_PASSWORD` | Escolha uma senha para proteger `/campanhas` — **obrigatório antes de divulgar o link**, já que o dashboard mostra dado pessoal de participante |
 | `NEXT_PUBLIC_BASE_URL` | A URL final do projeto, ex: `https://evento-lucrattiva.vercel.app` (ou seu domínio próprio) — usada nos QR Codes e links curtos |
@@ -67,20 +67,12 @@ Em **Settings → Environment Variables** do projeto na Vercel:
 
 **4. Aplique o schema no banco de produção**
 
-Antes do primeiro deploy funcionar de verdade, o banco novo precisa das tabelas. Do
-seu computador (ou desta sessão), com o CLI da Vercel:
-
-```bash
-npm i -g vercel
-vercel link                 # conecta esta pasta ao projeto criado na Vercel
-vercel env pull .env.production.local   # baixa as env vars reais do projeto
-npx dotenv -e .env.production.local -- npx prisma db push
-npx dotenv -e .env.production.local -- npx tsx prisma/seed.ts
-```
-
-(Se não quiser instalar `dotenv-cli`: `npx dotenv-cli -e ... --` funciona sem
-instalação prévia, ou exporte as duas variáveis manualmente no terminal antes de
-rodar `npx prisma db push` / `npx tsx prisma/seed.ts`.)
+O `build` script do `package.json` já roda `prisma db push` + o seed automaticamente
+a cada deploy (`prisma db push --accept-data-loss --skip-generate && tsx prisma/seed.ts
+&& next build`) — não precisa rodar nada manualmente. Isso é temporário: depois de
+confirmar que o primeiro deploy funcionou, o ideal é voltar o `build` script para só
+`next build` e aplicar schema/seed manualmente quando necessário (evita rodar `db push`
+em todo deploy).
 
 **5. Deploy**
 

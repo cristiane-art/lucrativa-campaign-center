@@ -4,8 +4,12 @@
 // zod em src/lib/types.ts em vez de enum nativo do Postgres — decisão mantida de
 // propósito ao migrar de SQLite: evita uma migração de schema toda vez que um
 // valor novo é adicionado, e o projeto todo (schema + validação) já era assim.
-// `directUrl` é a conexão direta (sem pgbouncer) usada só por `prisma db push`/
-// `migrate` — a Vercel Postgres (e a Neon) dão as duas URLs prontas.
+// `url`/`directUrl` apontam para DATABASE_POSTGRES_URL — a integração Prisma
+// Postgres da Vercel cria essa variável com a conexão Postgres direta (a
+// DATABASE_URL que ela cria por padrão é via Prisma Accelerate, que exige o
+// pacote de extensão @prisma/extension-accelerate; o projeto usa PrismaClient
+// puro, então não serve). Sem pgbouncer separado aqui, por isso as duas
+// apontam para a mesma variável.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,8 +17,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url       = env("DATABASE_POSTGRES_URL")
+  directUrl = env("DATABASE_POSTGRES_URL")
 }
 
 model Client {

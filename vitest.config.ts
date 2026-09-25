@@ -8,8 +8,7 @@ export default defineConfig({
     globalSetup: ["./tests/globalSetup.ts"],
     testTimeout: 15000,
     env: {
-      DATABASE_URL: TEST_DB_URL,
-      DIRECT_URL: TEST_DB_URL,
+      DATABASE_POSTGRES_URL: TEST_DB_URL,
     },
     // Testes de banco compartilham o mesmo banco Postgres de teste — evita
     // corrida entre arquivos de teste rodando em paralelo.

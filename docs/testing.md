@@ -7,7 +7,7 @@ npm run test:watch
 
 ## Como o banco de teste funciona
 
-`vitest.config.ts` aponta `DATABASE_URL`/`DIRECT_URL` para um banco Postgres
+`vitest.config.ts` aponta `DATABASE_POSTGRES_URL` para um banco Postgres
 separado do de desenvolvimento — por padrão `lucrativa_test` no mesmo Postgres local
 (`tests/testDb.ts`), ou o valor de `TEST_DATABASE_URL` quando definida (útil em CI,
 para apontar para um Postgres descartável). `tests/globalSetup.ts` garante o schema
