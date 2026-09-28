@@ -54,11 +54,12 @@ export function CredentialingBoard({
   const [loading, setLoading] = useState(true);
   const [checkinQuery, setCheckinQuery] = useState("");
   const [checkinMsg, setCheckinMsg] = useState<{ tone: "ok" | "warn" | "error"; text: string } | null>(null);
-  const [filters, setFilters] = useState<{ segment: string; client: string; source: string; regStatus: string }>({
+  const [filters, setFilters] = useState<{ segment: string; client: string; source: string; regStatus: string; diagnostic: string }>({
     segment: "",
     client: "",
     source: "",
     regStatus: "",
+    diagnostic: "",
   });
 
   async function load() {
@@ -100,6 +101,7 @@ export function CredentialingBoard({
     if (filters.client === "potencial" && !(l.isExistingClient === "NAO" || l.isExistingClient === "NAO_SEI")) return false;
     if (filters.source && sourceLabel(l.source) !== filters.source) return false;
     if (filters.regStatus && latestRegistrationStatus(l) !== filters.regStatus) return false;
+    if (filters.diagnostic === "interessado" && !(l.diagnosticInterest === "SIM" || l.diagnosticInterest === "QUERO_SABER_MAIS")) return false;
     return true;
   });
 
@@ -209,6 +211,10 @@ export function CredentialingBoard({
             <option value="NO_SHOW">Não compareceu</option>
             <option value="CANCELLED">Cancelado</option>
           </select>
+          <select className="rounded-lg border border-border bg-surface px-2 py-1 text-xs" value={filters.diagnostic} onChange={(e) => setFilters({ ...filters, diagnostic: e.target.value })}>
+            <option value="">Diagnóstico (todos)</option>
+            <option value="interessado">Interessados no diagnóstico</option>
+          </select>
         </div>
 
         <div className="overflow-x-auto">
@@ -252,7 +258,13 @@ export function CredentialingBoard({
                       {latestRegistrationStatus(l)}
                     </Badge>
                   </td>
-                  <td className="px-4 py-2 text-muted">{l.diagnosticInterest ?? "—"}</td>
+                  <td className="px-4 py-2">
+                    {l.diagnosticInterest === "SIM" || l.diagnosticInterest === "QUERO_SABER_MAIS" ? (
+                      <Badge tone="amber">{l.diagnosticInterest === "SIM" ? "Quer diagnóstico" : "Quer saber mais"}</Badge>
+                    ) : (
+                      <span className="text-muted">{l.diagnosticInterest ?? "—"}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-2 text-muted">{new Date(l.createdAt).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2">
                     <button

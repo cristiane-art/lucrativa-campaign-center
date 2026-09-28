@@ -43,6 +43,17 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
   const dateLabel = formatEventDate(campaign.eventDate);
   const displayCapacity = extra.landingCapacityLabel ?? campaign.eventCapacity;
 
+  // Vagas restantes reais, mas só divulgadas em relação ao número público
+  // (displayCapacity) — nunca "esgotado" aqui, já que a capacidade real
+  // (campaign.eventCapacity) pode ser maior de propósito (ver landingCapacityLabel).
+  const registeredCount = await db.registration.count({
+    where: { campaignId: campaign.id, status: { not: "CANCELLED" } },
+  });
+  const remainingSeats =
+    displayCapacity != null && registeredCount > 0 && registeredCount < displayCapacity
+      ? displayCapacity - registeredCount
+      : null;
+
   return (
     <main className="min-h-screen bg-bg">
       {/* HERO */}
@@ -100,7 +111,9 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
 
           {displayCapacity && (
             <p className="mt-4 text-xs uppercase tracking-wide text-white/60">
-              Vagas limitadas · encontro para até {displayCapacity} pessoas
+              {remainingSeats != null
+                ? `Restam ${remainingSeats} vagas · encontro para até ${displayCapacity} pessoas`
+                : `Vagas limitadas · encontro para até ${displayCapacity} pessoas`}
             </p>
           )}
         </div>
@@ -262,9 +275,11 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
             {campaign.cta || "Quero participar"}
           </h2>
           <p className="mt-2 text-sm text-muted">
-            {displayCapacity
-              ? `Vagas limitadas a ${displayCapacity} pessoas — leva menos de 1 minuto.`
-              : "Leva menos de 1 minuto."}
+            {remainingSeats != null
+              ? `Restam ${remainingSeats} vagas de ${displayCapacity} — leva menos de 1 minuto.`
+              : displayCapacity
+                ? `Vagas limitadas a ${displayCapacity} pessoas — leva menos de 1 minuto.`
+                : "Leva menos de 1 minuto."}
           </p>
         </div>
         <div className="mx-auto mt-8 max-w-md">
