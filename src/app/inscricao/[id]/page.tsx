@@ -253,9 +253,9 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
 
         return (
           <article
-            key={s.name}
-            className="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
-          >
+  key={s.name}
+  className="flex flex-col overflow-hidden rounded-2xl border border-[#b69a58]/30 bg-surface shadow-sm"
+>
             <div
               className="h-1.5"
               style={{
@@ -271,7 +271,7 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
                 <img
                   src={foto}
                   alt={s.name}
-                  className="h-80 w-full object-contain"
+                 className="h-[420px] w-full object-cover object-top"
                   loading="lazy"
                 />
               ) : (
