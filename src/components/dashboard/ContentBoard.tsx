@@ -45,9 +45,19 @@ const STATUS_TONE: Record<string, "neutral" | "accent" | "amber" | "red" | "mute
   ARCHIVED: "muted",
 };
 
+const CHANNEL_LABELS: Record<string, string> = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  whatsapp: "WhatsApp",
+  radio: "Rádio",
+  fisico: "Físico",
+  outro: "Outros",
+};
+
 export function ContentBoard({ campaignId, campaignName, status }: { campaignId: string; campaignName: string; status: string }) {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [filter, setFilter] = useState("PENDING_APPROVAL");
+  const [channelFilter, setChannelFilter] = useState("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
 
@@ -81,7 +91,9 @@ export function ContentBoard({ campaignId, campaignName, status }: { campaignId:
     load();
   }
 
-  const visible = filter === "ALL" ? items : items.filter((i) => i.status === filter);
+  const channels = Array.from(new Set(items.map((i) => i.channel))).sort();
+  const byStatus = filter === "ALL" ? items : items.filter((i) => i.status === filter);
+  const visible = channelFilter === "ALL" ? byStatus : byStatus.filter((i) => i.channel === channelFilter);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
@@ -100,6 +112,30 @@ export function ContentBoard({ campaignId, campaignName, status }: { campaignId:
           </button>
         ))}
       </div>
+
+      {channels.length > 1 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => setChannelFilter("ALL")}
+            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+              channelFilter === "ALL" ? "border-amber bg-amber-soft text-amber" : "border-border text-muted hover:text-ink"
+            }`}
+          >
+            Todas as redes
+          </button>
+          {channels.map((c) => (
+            <button
+              key={c}
+              onClick={() => setChannelFilter(c)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                channelFilter === c ? "border-amber bg-amber-soft text-amber" : "border-border text-muted hover:text-ink"
+              }`}
+            >
+              {CHANNEL_LABELS[c] ?? c} ({items.filter((i) => i.channel === c).length})
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.length === 0 && <p className="text-sm text-muted">Nenhum conteúdo nesse status.</p>}
