@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { EventBanner } from "@/components/EventBanner";
@@ -32,6 +33,37 @@ export const dynamic = "force-dynamic";
 function formatEventDate(date: Date | null) {
   if (!date) return null;
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const campaign = await db.campaign.findUnique({ where: { id } });
+  if (!campaign) return {};
+
+  const title = campaign.name;
+  const description =
+    campaign.landingSubtitle || campaign.valueProposition || `Inscreva-se: ${campaign.name} — ${BRAND.fullName}.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "pt_BR",
+      ...(campaign.bannerImageUrl ? { images: [{ url: campaign.bannerImageUrl }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function InscricaoPage({ params }: { params: Promise<{ id: string }> }) {
