@@ -18,6 +18,11 @@ import {
   IconSparkle,
   IconUsers,
 } from "@/components/icons";
+const fotosPalestrantes: Record<string, string> = {
+  "Cristiane Dartora": "/Palestrantes/Cristiane%20Dartora.jpg",
+  "Cristiane Lantin": "/Palestrantes/Cristiane%20Lantin.jpg",
+  "Aline Ramos": "/Palestrantes/Aline%20Ramos.jpg",
+};
 
 function scheduleIcon(label: string) {
   const l = label.toLowerCase();
@@ -220,13 +225,13 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
                   style={{ background: "linear-gradient(90deg, var(--accent), var(--amber))" }}
                   aria-hidden
                 />
-                {s.photoUrl ? (
+               {(s.photoUrl || fotosPalestrantes[s.name]) ? (  
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={s.photoUrl}
-                    alt={s.name}
-                    className="mx-auto h-16 w-16 rounded-full object-cover"
-                  />
+  src={s.photoUrl || fotosPalestrantes[s.name]}
+  alt={s.name}
+  className="mx-auto h-16 w-16 rounded-full object-cover"
+/>
                 ) : (
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent-strong">
                     {s.name.charAt(0)}
