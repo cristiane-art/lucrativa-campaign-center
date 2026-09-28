@@ -67,12 +67,14 @@ Em **Settings → Environment Variables** do projeto na Vercel:
 
 **4. Aplique o schema no banco de produção**
 
-O `build` script do `package.json` já roda `prisma db push` + o seed automaticamente
-a cada deploy (`prisma db push --accept-data-loss --skip-generate && tsx prisma/seed.ts
-&& next build`) — não precisa rodar nada manualmente. Isso é temporário: depois de
-confirmar que o primeiro deploy funcionou, o ideal é voltar o `build` script para só
-`next build` e aplicar schema/seed manualmente quando necessário (evita rodar `db push`
-em todo deploy).
+O `build` script do `package.json` roda `prisma db push` automaticamente a cada
+deploy (`prisma db push --accept-data-loss --skip-generate && next build`) — não
+precisa rodar nada manualmente para manter o schema em dia. O **seed não roda mais
+automaticamente** (rodou uma vez para criar o tenant e a campanha inicial); depois
+que o evento existe e é editado pelo dashboard, rodar o seed de novo sobrescreveria
+esses dados com os valores fixos do `prisma/seed.ts`. Para rodar o seed manualmente
+quando precisar (ex: criar um novo evento a partir do template), use `vercel env
+pull` + `npx tsx prisma/seed.ts` localmente, como no passo a passo antigo.
 
 **5. Deploy**
 
