@@ -37,11 +37,13 @@ export function CampaignDashboard({ campaign: initial }: { campaign: SerializedC
     if (!confirm("Rodar Pesquisa → Estratégia → Conteúdo → Criativo → Rastreamento de novo para esta campanha?")) return;
     setRunningAgents(true);
     setAgentsResult(null);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 58_000);
     try {
-      const res = await fetch(`/api/campaigns/${campaign.id}/confirm`, { method: "POST" });
-      const data = await res.json();
+      const res = await fetch(`/api/campaigns/${campaign.id}/confirm`, { method: "POST", signal: controller.signal });
+      const data = await res.json().catch(() => ({ error: `Resposta inesperada do servidor (status ${res.status})` }));
       if (!res.ok) {
-        setAgentsResult(`Erro: ${data.error}`);
+        setAgentsResult(`Erro: ${data.error ?? res.status}`);
         return;
       }
       const stages = data.result.stages as Record<string, string>;
@@ -50,8 +52,14 @@ export function CampaignDashboard({ campaign: initial }: { campaign: SerializedC
         .join(" · ");
       setAgentsResult(summary);
     } catch (err) {
-      setAgentsResult(`Erro: ${(err as Error).message}`);
+      const isAbort = err instanceof DOMException && err.name === "AbortError";
+      setAgentsResult(
+        isAbort
+          ? "Deu timeout (passou de 58s). Isso pode acontecer mesmo assim — confira a aba Conteúdo, o pipeline pode ter terminado no servidor mesmo sem a resposta chegar aqui."
+          : `Erro: ${(err as Error).message}`
+      );
     } finally {
+      clearTimeout(timeout);
       setRunningAgents(false);
     }
   }
