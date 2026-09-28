@@ -18,10 +18,43 @@ interface Counts {
   attended: number;
 }
 
+const STAGE_LABELS: Record<string, string> = {
+  research: "Pesquisa",
+  strategy: "Estratégia",
+  content: "Conteúdo",
+  creative: "Criativo",
+  tracking: "Rastreamento",
+};
+
 export function CampaignDashboard({ campaign: initial }: { campaign: SerializedCampaign }) {
   const [campaign, setCampaign] = useState(initial);
   const [counts, setCounts] = useState<Counts>({ leads: 0, registered: 0, confirmed: 0, attended: 0 });
   const [loading, setLoading] = useState(true);
+  const [runningAgents, setRunningAgents] = useState(false);
+  const [agentsResult, setAgentsResult] = useState<string | null>(null);
+
+  async function runAgents() {
+    if (!confirm("Rodar Pesquisa → Estratégia → Conteúdo → Criativo → Rastreamento de novo para esta campanha?")) return;
+    setRunningAgents(true);
+    setAgentsResult(null);
+    try {
+      const res = await fetch(`/api/campaigns/${campaign.id}/confirm`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setAgentsResult(`Erro: ${data.error}`);
+        return;
+      }
+      const stages = data.result.stages as Record<string, string>;
+      const summary = Object.entries(stages)
+        .map(([k, v]) => `${STAGE_LABELS[k] ?? k}: ${v === "ok" ? "✓" : v === "skipped" ? "pulado" : "falhou"}`)
+        .join(" · ");
+      setAgentsResult(summary);
+    } catch (err) {
+      setAgentsResult(`Erro: ${(err as Error).message}`);
+    } finally {
+      setRunningAgents(false);
+    }
+  }
 
   async function loadCounts() {
     const res = await fetch(`/api/campaigns/${campaign.id}/leads`);
@@ -88,6 +121,16 @@ export function CampaignDashboard({ campaign: initial }: { campaign: SerializedC
                 Editar briefing da campanha
               </Button>
             </Link>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-2 w-full"
+              onClick={runAgents}
+              disabled={runningAgents}
+            >
+              {runningAgents ? "Rodando agentes..." : "Rodar agentes de IA (Pesquisa/Estratégia/Conteúdo)"}
+            </Button>
+            {agentsResult && <p className="mt-2 text-xs text-muted">{agentsResult}</p>}
           </Card>
         </div>
       </div>
