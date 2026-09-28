@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Label, Input, Textarea, Button } from "@/components/ui";
+import { Card, Label, Input, Textarea } from "@/components/ui";
 import { PARTICIPANT_SEGMENTS, PARTICIPANT_SEGMENT_LABELS } from "@/lib/types";
 
 interface FormState {
@@ -218,7 +218,7 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
           <label className="flex items-start gap-2">
             <input
               type="checkbox"
-              className="mt-0.5"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
               checked={operationalConsent}
               onChange={(e) => setOperationalConsent(e.target.checked)}
             />
@@ -229,7 +229,7 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
           <label className="flex items-start gap-2">
             <input
               type="checkbox"
-              className="mt-0.5"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
               checked={form.marketingConsent}
               onChange={(e) => set("marketingConsent", e.target.checked)}
             />
@@ -238,9 +238,13 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
         </div>
 
         {error && <p className="text-sm text-red">{error}</p>}
-        <Button type="submit" disabled={status === "sending"} className="w-full">
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="w-full rounded-lg bg-amber px-8 py-3.5 text-sm font-semibold uppercase tracking-wide text-[#12301c] shadow-md transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+        >
           {status === "sending" ? "Enviando..." : ctaLabel}
-        </Button>
+        </button>
       </form>
     </Card>
   );
