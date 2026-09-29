@@ -25,6 +25,7 @@ export const config = {
     "/campanhas/:path*",
     "/api/campaigns/:path*",
     "/api/content/:path*",
+    "/api/creative-assets/:path*",
     "/api/leads/:path*",
     "/api/tasks/:path*",
     "/api/approvals/:path*",

@@ -60,6 +60,7 @@ export function ContentBoard({ campaignId, campaignName, status }: { campaignId:
   const [channelFilter, setChannelFilter] = useState("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch(`/api/campaigns/${campaignId}/content`);
@@ -89,6 +90,20 @@ export function ContentBoard({ campaignId, campaignName, status }: { campaignId:
     });
     setEditingId(null);
     load();
+  }
+
+  async function regenerateAsset(assetId: string) {
+    setRegeneratingId(assetId);
+    try {
+      const res = await fetch(`/api/creative-assets/${assetId}/regenerate`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Não foi possível gerar a imagem.");
+      }
+      await load();
+    } finally {
+      setRegeneratingId(null);
+    }
   }
 
   const channels = Array.from(new Set(items.map((i) => i.channel))).sort();
@@ -147,9 +162,18 @@ export function ContentBoard({ campaignId, campaignName, status }: { campaignId:
                 <div className="relative aspect-square w-full bg-surface-2">
                   <img src={asset.imageUrl} alt={item.title} className="h-full w-full object-cover" />
                   {asset.provider === "mock" && (
-                    <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">
-                      MOCK
-                    </span>
+                    <>
+                      <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">
+                        MOCK
+                      </span>
+                      <button
+                        onClick={() => regenerateAsset(asset.id)}
+                        disabled={regeneratingId === asset.id}
+                        className="absolute inset-x-2 bottom-2 rounded-lg bg-amber px-3 py-1.5 text-xs font-semibold text-[#12301c] shadow-md transition-opacity hover:opacity-90 disabled:opacity-60"
+                      >
+                        {regeneratingId === asset.id ? "Gerando..." : "Gerar foto real"}
+                      </button>
+                    </>
                   )}
                 </div>
               )}
