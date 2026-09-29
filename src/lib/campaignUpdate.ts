@@ -40,6 +40,7 @@ export const CampaignUpdateSchema = z.object({
   valueProposition: z.string().optional(),
   cta: z.string().optional(),
   ctaLink: z.string().optional(),
+  bannerImageUrl: z.string().optional(),
 
   channels: z.array(z.string()).optional(),
   assetsAvailable: z.array(z.string()).optional(),
@@ -77,6 +78,7 @@ export async function updateCampaignFromWizard(campaignId: string, patch: Campai
     "valueProposition",
     "cta",
     "ctaLink",
+    "bannerImageUrl",
   ];
   for (const key of scalarKeys) {
     if (patch[key] !== undefined) data[key] = patch[key];

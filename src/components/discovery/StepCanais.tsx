@@ -41,6 +41,18 @@ const ASSET_LABELS: Record<string, string> = {
 export function StepCanais({ campaign, patch }: StepProps) {
   const [cta, setCta] = useState(campaign.cta ?? "");
   const [ctaLink, setCtaLink] = useState(campaign.ctaLink ?? "");
+  const [bannerImageUrl, setBannerImageUrl] = useState(campaign.bannerImageUrl ?? "");
+  const [whatsappGroupUrl, setWhatsappGroupUrl] = useState(campaign.briefingExtra.whatsappGroupUrl ?? "");
+  const [speakerPhotos, setSpeakerPhotos] = useState(
+    campaign.briefingExtra.speakers.map((s) => s.photoUrl ?? "")
+  );
+
+  function saveSpeakerPhoto(index: number) {
+    const speakers = campaign.briefingExtra.speakers.map((s, i) =>
+      i === index ? { ...s, photoUrl: speakerPhotos[i] || undefined } : s
+    );
+    patch({ briefingExtra: { speakers } });
+  }
 
   function toggle(list: string[], value: string, field: "channels" | "assetsAvailable") {
     const set = new Set(list);
@@ -83,6 +95,45 @@ export function StepCanais({ campaign, patch }: StepProps) {
         <Label>Link de inscrição/destino (se já existir — senão deixe em branco que criamos uma landing page)</Label>
         <Input value={ctaLink} onChange={(e) => setCtaLink(e.target.value)} onBlur={() => patch({ ctaLink })} placeholder="https://..." />
       </div>
+
+      <div>
+        <Label>URL da foto de capa do evento (opcional — sem isso, usamos um banner desenhado)</Label>
+        <Input
+          value={bannerImageUrl}
+          onChange={(e) => setBannerImageUrl(e.target.value)}
+          onBlur={() => patch({ bannerImageUrl })}
+          placeholder="https://..."
+        />
+      </div>
+
+      <div>
+        <Label>Link do grupo do WhatsApp (opcional — aparece na tela de confirmação após a inscrição)</Label>
+        <Input
+          value={whatsappGroupUrl}
+          onChange={(e) => setWhatsappGroupUrl(e.target.value)}
+          onBlur={() => patch({ briefingExtra: { whatsappGroupUrl } })}
+          placeholder="https://chat.whatsapp.com/..."
+        />
+      </div>
+
+      {campaign.briefingExtra.speakers.length > 0 && (
+        <div>
+          <Label>Fotos das palestrantes (opcional — sem foto, mostra a inicial do nome)</Label>
+          <div className="space-y-2">
+            {campaign.briefingExtra.speakers.map((s, i) => (
+              <div key={s.name} className="flex items-center gap-2">
+                <span className="w-32 shrink-0 truncate text-sm text-muted">{s.name}</span>
+                <Input
+                  value={speakerPhotos[i] ?? ""}
+                  onChange={(e) => setSpeakerPhotos((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))}
+                  onBlur={() => saveSpeakerPhoto(i)}
+                  placeholder="https://..."
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

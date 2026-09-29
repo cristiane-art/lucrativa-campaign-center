@@ -78,7 +78,15 @@ function readTrackingFromUrl() {
   };
 }
 
-export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string; ctaLabel: string }) {
+export function RegistrationForm({
+  campaignId,
+  ctaLabel,
+  whatsappGroupUrl,
+}: {
+  campaignId: string;
+  ctaLabel: string;
+  whatsappGroupUrl?: string;
+}) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [operationalConsent, setOperationalConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "duplicate" | "error">("idle");
@@ -128,6 +136,16 @@ export function RegistrationForm({ campaignId, ctaLabel }: { campaignId: string;
             ? "Atualizamos seus dados com o que você acabou de enviar."
             : "Salve este evento na sua agenda. Enviaremos um lembrete próximo à data."}
         </p>
+        {whatsappGroupUrl && (
+          <a
+            href={whatsappGroupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-amber px-6 py-3 text-sm font-semibold uppercase tracking-wide text-[#12301c] shadow-md transition-transform hover:scale-[1.01]"
+          >
+            Entrar no grupo do WhatsApp
+          </a>
+        )}
       </Card>
     );
   }

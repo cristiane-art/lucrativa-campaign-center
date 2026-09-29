@@ -267,6 +267,9 @@ export const CampaignBriefingExtraSchema = z.object({
   // propósito, como tática de exclusividade. Quando ausente, a landing usa
   // Campaign.eventCapacity normalmente.
   landingCapacityLabel: z.number().int().positive().optional(),
+  // Link de convite de um grupo do WhatsApp (ex: https://chat.whatsapp.com/...)
+  // mostrado na tela de confirmação depois que a pessoa se inscreve.
+  whatsappGroupUrl: z.string().optional(),
 });
 export type CampaignBriefingExtra = z.infer<typeof CampaignBriefingExtraSchema>;
 

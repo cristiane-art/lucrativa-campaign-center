@@ -315,7 +315,11 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
           </p>
         </div>
         <div className="mx-auto mt-8 max-w-md">
-          <RegistrationForm campaignId={campaign.id} ctaLabel={campaign.cta || "Quero participar"} />
+          <RegistrationForm
+            campaignId={campaign.id}
+            ctaLabel={campaign.cta || "Quero participar"}
+            whatsappGroupUrl={extra.whatsappGroupUrl}
+          />
         </div>
       </section>
 
