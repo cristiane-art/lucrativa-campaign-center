@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+// Sem isso, o Next não consegue resolver URLs relativas de imagem
+// (og:image, banner etc.) em URLs absolutas — e sem URL absoluta, o
+// WhatsApp/Instagram/Facebook simplesmente não mostram a prévia com foto.
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: "Central de Campanhas — Lucrattiva",
   description: "Gerencie e automatize as campanhas de divulgação da Lucrattiva.",
 };

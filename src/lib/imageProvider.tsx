@@ -207,12 +207,15 @@ async function generateStock(brief: VisualBrief): Promise<GeneratedImage> {
           src={photoUrl}
           width={width}
           height={height}
-          style={{ position: "absolute", inset: 0, objectFit: "cover" }}
+          style={{ position: "absolute", top: 0, left: 0, objectFit: "cover" }}
         />
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
             display: "flex",
             background:
               "linear-gradient(180deg, rgba(12,32,21,0.10) 0%, rgba(12,32,21,0.45) 55%, rgba(12,32,21,0.92) 100%)",

@@ -90,7 +90,9 @@ export async function generateMetadata({
       description,
       type: "website",
       locale: "pt_BR",
-      ...(campaign.bannerImageUrl ? { images: [{ url: campaign.bannerImageUrl }] } : {}),
+      // Sem "images" aqui de propósito: cai no opengraph-image.tsx (convenção
+      // de arquivo do Next), que monta um card de convite com foto + logo +
+      // data, em vez de mostrar a foto crua do banner sem contexto nenhum.
     },
     twitter: {
       card: "summary_large_image",
