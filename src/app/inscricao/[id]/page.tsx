@@ -18,6 +18,40 @@ import {
   IconSparkle,
   IconUsers,
 } from "@/components/icons";
+const fotosPalestrantes: Record<string, string> = {
+  "Cristiane Dartora": "/Palestrantes/Cristiane%20Dartora.jpg",
+  "Cristiane Lantin": "/Palestrantes/Cristiane%20Lantin.jpg",
+  "Aline Ramos": "/Palestrantes/Aline%20Ramos.jpg",
+};
+
+const apresentacoesPalestrantes: Record<
+  string,
+  { biografia: string; temas: string[] }
+> = {
+  "Cristiane Dartora": {
+    biografia:
+      "Cristiane Dartora é contadora, especialista em Agrotributário e pós-graduada em Contabilidade, Auditoria e Perícia do Agronegócio. Possui mais de 12 anos de experiência na área contábil e, há 5 anos, é CEO e fundadora da Lucrattiva Contabilidade Agribusiness, com atuação estratégica em soluções contábeis e tributárias voltadas ao agronegócio.",
+    temas: [
+      "A Reforma Tributária no Agro",
+      "Cadastros Comerciais",
+    ],
+  },
+  "Cristiane Lantin": {
+    biografia: "Formada em Direito e em Contabilidade, Pós-graduada em direito Tributário pela USP, MBA em Auditoria pela Trevisan, Especialista em Tributos do Agronegócio, Mais de 25 anos de atuação em contibilidade, Foi membro da Comissão de Direito Agrário da OAB/SP",
+    temas: [
+      "A Nota Fiscal",
+      "O que não muda",
+    ],
+  },
+  "Aline Ramos": {
+    biografia:
+      "Aline Ramos é contadora, pós-graduada em Planejamento Tributário e Diretora Operacional da Lucrattiva Contabilidade Agribusiness. Possui 18 anos de experiência na área contábil, com forte atuação no agronegócio, especialmente em revendas agrícolas, gestão tributária e empresarial.",
+    temas: [
+      "Quem é contribuinte do IBS/CBS",
+      "Gestão Fiscal e Financeira",
+    ],
+  },
+};
 
 function scheduleIcon(label: string) {
   const l = label.toLowerCase();
@@ -200,84 +234,90 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
       )}
       <SectionDivider fromColor="var(--surface-2)" toColor="var(--bg)" flip />
 
-      {/* RODA DE CONVERSA */}
-      {extra.speakers.length > 0 && (
-        <section className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
-          <h2 className="text-center font-display text-2xl font-semibold text-accent-strong sm:text-3xl">
-            Roda de conversa
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">
-            Profissionais com mais de 20 anos de experiência, num formato próximo e sem enrolação.
-          </p>
-          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-5">
-            {extra.speakers.map((s) => (
-              <div
-                key={s.name}
-                className="relative w-full overflow-hidden rounded-2xl border border-border bg-surface p-6 text-center shadow-sm transition-shadow hover:shadow-md sm:w-[calc(50%-0.625rem)]"
-              >
-                <span
-                  className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: "linear-gradient(90deg, var(--accent), var(--amber))" }}
-                  aria-hidden
-                />
-                {s.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={s.photoUrl}
-                    alt={s.name}
-                    className="mx-auto h-16 w-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent-strong">
-                    {s.name.charAt(0)}
-                  </div>
-                )}
-                <p className="mt-4 font-display text-lg font-semibold text-ink">{s.name}</p>
-                {s.topicPending ? (
-                  <span className="mt-2 inline-block rounded-full bg-amber-soft px-3 py-1 text-xs font-medium text-amber">
-                    Tema em definição
-                  </span>
-                ) : (
-                  <p className="mt-2 text-sm text-muted">{s.specialty}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-      {extra.schedule.length > 0 && <SectionDivider fromColor="var(--bg)" toColor="var(--accent-strong)" />}
+ {/* RODA DE CONVERSA */}
+{extra.speakers.length > 0 && (
+  <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+    <h2 className="text-center font-display text-3xl font-semibold text-accent-strong">
+      Conheça nossas palestrantes
+    </h2>
 
-      {/* PROGRAMAÇÃO / NETWORKING */}
-      {extra.schedule.length > 0 && (
-        <section className="bg-accent-strong py-16 text-white sm:py-20">
-          <div className="mx-auto max-w-2xl px-5">
-            <h2 className="text-center font-display text-2xl font-semibold sm:text-3xl">Programação</h2>
-            <div className="relative mt-10 space-y-8">
-              <div
-                className="absolute inset-y-3 left-4 w-px bg-[color-mix(in_srgb,var(--amber)_40%,transparent)]"
-                aria-hidden
-              />
-              {extra.schedule.map((item, i) => {
-                const Icon = scheduleIcon(item.label);
-                return (
-                  <div key={i} className="relative flex items-start gap-5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber text-[#12301c]">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-display text-base font-semibold text-amber">{item.time}</p>
-                      <p className="mt-0.5 text-sm text-white/85">{item.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
+    <p className="mx-auto mt-3 max-w-2xl text-center text-base text-muted">
+      Experiência contábil e tributária para uma conversa
+      sobre o presente e o futuro do agronegócio.
+    </p>
+
+    <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {extra.speakers.map((s) => {
+        const foto = s.photoUrl || fotosPalestrantes[s.name];
+        const apresentacao = apresentacoesPalestrantes[s.name];
+
+        return (
+          <article
+  key={s.name}
+  className="flex flex-col overflow-hidden rounded-2xl border border-[#b69a58]/30 bg-surface shadow-sm"
+>
+            <div
+              className="h-1.5"
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--accent), var(--amber))",
+              }}
+              aria-hidden="true"
+            />
+
+            <div className="bg-surface-2">
+              {foto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={foto}
+                  alt={s.name}
+                 className="h-[420px] w-full object-cover object-top"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-80 items-center justify-center bg-accent-soft font-display text-6xl text-accent-strong">
+                  {s.name.charAt(0)}
+                </div>
+              )}
             </div>
-            {extra.networkingHighlight && (
-              <p className="mt-4 text-center text-sm text-white/70">{extra.networkingHighlight}</p>
-            )}
-          </div>
-        </section>
-      )}
+
+            <div className="flex flex-1 flex-col p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong">
+                Palestrante
+              </p>
+
+              <h3 className="mt-2 font-display text-2xl font-semibold text-ink">
+                {s.name}
+              </h3>
+
+              {apresentacao?.biografia && (
+                <p className="mt-4 text-sm leading-7 text-muted">
+                  {apresentacao.biografia}
+                </p>
+              )}
+
+              {apresentacao?.temas?.length ? (
+                <div className="mt-auto pt-6">
+                  <div className="rounded-xl bg-accent-soft p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-accent-strong">
+                      Temas da participação
+                    </p>
+
+                    <ul className="mt-3 list-disc space-y-2 pl-4 text-sm leading-6 text-accent-strong">
+                      {apresentacao.temas.map((tema) => (
+                        <li key={tema}>{tema}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+)}
       {extra.schedule.length > 0 && <SectionDivider fromColor="var(--accent-strong)" toColor="var(--bg)" flip />}
 
       {/* DIAGNÓSTICO */}
