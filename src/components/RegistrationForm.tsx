@@ -145,6 +145,12 @@ export function RegistrationForm({
             ? "Atualizamos seus dados com o que você acabou de enviar."
             : "Salve este evento na sua agenda. Enviaremos um lembrete próximo à data."}
         </p>
+        <a
+          href={`/api/inscricao/${campaignId}/calendar.ics`}
+          className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-accent px-6 py-3 text-sm font-semibold text-accent-strong transition-colors hover:bg-accent-soft"
+        >
+          Adicionar à agenda
+        </a>
         {whatsappGroupUrl && (
           <>
             <p className="mt-4 text-xs text-muted">Redirecionando para o grupo do WhatsApp...</p>

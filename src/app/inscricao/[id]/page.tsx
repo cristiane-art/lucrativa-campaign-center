@@ -161,10 +161,15 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
               </span>
             )}
             {campaign.eventLocation && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campaign.eventLocation)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/20"
+              >
                 <IconPin className="h-4 w-4 text-amber" />
                 {campaign.eventLocation}
-              </span>
+              </a>
             )}
           </div>
 
