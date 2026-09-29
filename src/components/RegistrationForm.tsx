@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, Label, Input, Textarea } from "@/components/ui";
 import { PARTICIPANT_SEGMENTS, PARTICIPANT_SEGMENT_LABELS } from "@/lib/types";
 
@@ -96,6 +96,15 @@ export function RegistrationForm({
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  useEffect(() => {
+    if ((status === "done" || status === "duplicate") && whatsappGroupUrl) {
+      const timer = setTimeout(() => {
+        window.location.href = whatsappGroupUrl;
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [status, whatsappGroupUrl]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!operationalConsent) {
@@ -137,14 +146,15 @@ export function RegistrationForm({
             : "Salve este evento na sua agenda. Enviaremos um lembrete próximo à data."}
         </p>
         {whatsappGroupUrl && (
-          <a
-            href={whatsappGroupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-amber px-6 py-3 text-sm font-semibold uppercase tracking-wide text-[#12301c] shadow-md transition-transform hover:scale-[1.01]"
-          >
-            Entrar no grupo do WhatsApp
-          </a>
+          <>
+            <p className="mt-4 text-xs text-muted">Redirecionando para o grupo do WhatsApp...</p>
+            <a
+              href={whatsappGroupUrl}
+              className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-amber px-6 py-3 text-sm font-semibold uppercase tracking-wide text-[#12301c] shadow-md transition-transform hover:scale-[1.01]"
+            >
+              Entrar no grupo do WhatsApp
+            </a>
+          </>
         )}
       </Card>
     );
