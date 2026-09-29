@@ -137,6 +137,10 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="relative z-10 mx-auto max-w-3xl px-5 py-24">
+          <div className="mx-auto mb-6 inline-flex items-center justify-center rounded-2xl bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-lucrattiva.png" alt={BRAND.fullName} className="h-12 w-auto sm:h-14" />
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber">
             {BRAND.fullName} · Agribusiness
           </p>
