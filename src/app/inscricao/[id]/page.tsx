@@ -37,7 +37,7 @@ const apresentacoesPalestrantes: Record<
     ],
   },
   "Cristiane Lantin": {
-    biografia: "Formada em Direito e em Contabilidade, Pós-graduada em direito Tributário pela USP, MBA em Auditoria pela Trevisan, Especialista em Tributos do Agronegócio, Mais de 25 anos de atuação em contibilidade, Foi membro da Comissão de Direito Agrário da OAB/SP",
+    biografia: "Formada em Direito e em Contabilidade, Pós-graduada em direito Tributário pela USP, MBA em Auditoria pela Trevisan, Especialista em Tributos do Agronegócio, Mais de 25 anos de atuação em Contabilidade, Foi membro da Comissão de Direito Agrário da OAB/SP",
     temas: [
       "A Nota Fiscal",
       "O que não muda",
