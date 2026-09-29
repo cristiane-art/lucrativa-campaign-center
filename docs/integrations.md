@@ -22,19 +22,29 @@ Custo é medido de verdade por chamada (tokens reais × tabela de preço em
 
 ## Geração de imagem (Creative Agent)
 
-Interface plugável em `src/lib/imageProvider.ts`. Dois modos:
+Interface plugável em `src/lib/imageProvider.tsx`. Três modos:
 
 - **Mock (padrão, sem configuração nenhuma)**: gera um placeholder SVG com a
   identidade visual da Lucrattiva (cores, tipografia, selo), sempre etiquetado
   `provider: "mock"` na UI. Funciona offline, sem chave.
+- **Stock (`IMAGE_PROVIDER=stock` + `PIXABAY_API_KEY`)**: busca uma foto real
+  no Pixabay (banco gratuito — pixabay.com/api/docs) com base em palavras-chave
+  extraídas do título/notas da peça (mapa PT→EN em `STOCK_QUERY_KEYWORDS`, com
+  fallback determinístico em `STOCK_QUERY_POOL`), baixa a foto e monta a arte
+  final (foto + overlay de gradiente + logo/título/CTA) via `ImageResponse`
+  (`next/og`), a mesma técnica usada em `opengraph-image.tsx`. **Não foi testado
+  contra uma chave real nesta sessão** (o proxy de rede do sandbox bloqueia
+  `pixabay.com`) — só o mecanismo de composição foi validado localmente com uma
+  imagem placeholder. Confira o resultado real ao ativar pela primeira vez.
 - **OpenAI Images (`IMAGE_PROVIDER=openai` + `IMAGE_PROVIDER_API_KEY`)**: chama
   `POST https://api.openai.com/v1/images/generations` (modelo `gpt-image-1`) via
   `fetch` direto. **Não foi testada contra uma chave real nesta sessão** (sem acesso
   de rede para isso) — confira a resposta da API ao ativar pela primeira vez.
 
-Para adicionar outro provedor (Stability, Ideogram etc.), implemente a função
-`generateXxx(brief: VisualBrief): Promise<GeneratedImage>` seguindo o padrão de
-`generateOpenAI` e adicione o `if` correspondente em `generateImage()`.
+Para adicionar outro provedor (Stability, Ideogram, Pexels quando a emissão de
+chaves reabrir, etc.), implemente a função `generateXxx(brief: VisualBrief):
+Promise<GeneratedImage>` seguindo o padrão de `generateOpenAI`/`generateStock` e
+adicione o `if` correspondente em `generateImage()`.
 
 ## Rastreamento (UTM + QR Code)
 

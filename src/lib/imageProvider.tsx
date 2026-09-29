@@ -1,3 +1,4 @@
+import { ImageResponse } from "next/og";
 import { BRAND } from "./brand";
 
 // Creative Agent — provedor de geração de imagem plugável (seção 10 do spec).
@@ -117,11 +118,151 @@ async function generateOpenAI(brief: VisualBrief): Promise<GeneratedImage> {
   return { url, provider: "openai" };
 }
 
+// Adaptador "stock" — busca uma foto real no Pixabay (banco gratuito) que
+// combine com o tema da peça e monta a arte final por cima (overlay de
+// marca + título), com a mesma técnica de composição usada em
+// opengraph-image.tsx. Ativado só quando IMAGE_PROVIDER=stock e
+// PIXABAY_API_KEY estão definidos.
+
+const STOCK_QUERY_POOL = [
+  "soybean field aerial sunset",
+  "wheat harvest combine golden hour",
+  "farmer using tablet in field",
+  "agribusiness meeting outdoors",
+  "tractor plowing field sunrise",
+  "rural landscape green plantation aerial",
+  "corn field aerial drone",
+  "farmer handshake deal agriculture",
+];
+
+// Palavras-chave em PT-BR comuns nos títulos gerados pelo Content Agent,
+// mapeadas pra termos de busca em inglês (o Pixabay indexa melhor em inglês).
+const STOCK_QUERY_KEYWORDS: Record<string, string> = {
+  colheita: "harvest combine field",
+  plantação: "crop field aerial farm",
+  gestão: "farm business meeting",
+  planejamento: "farm business meeting planning",
+  networking: "people talking outdoors agriculture",
+  lucratividade: "agribusiness success field",
+  tecnologia: "precision agriculture drone technology",
+  custo: "farm finance calculator field",
+  churrasco: "barbecue outdoor gathering",
+};
+
+function pickStockQuery(brief: VisualBrief): string {
+  const text = `${brief.headline} ${brief.notes ?? ""}`.toLowerCase();
+  for (const [keyword, query] of Object.entries(STOCK_QUERY_KEYWORDS)) {
+    if (text.includes(keyword)) return query;
+  }
+  // Sem palavra-chave reconhecida: escolhe de forma determinística (o mesmo
+  // brief sempre cai na mesma foto) em vez de aleatório.
+  const hash = [...text].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return STOCK_QUERY_POOL[hash % STOCK_QUERY_POOL.length];
+}
+
+function dimsForFormat(format: string): { width: number; height: number; orientation: "landscape" | "portrait" | "square" } {
+  switch (format) {
+    case "story":
+    case "reel":
+      return { width: 1080, height: 1920, orientation: "portrait" };
+    case "flyer":
+      return { width: 1200, height: 1600, orientation: "portrait" };
+    case "banner":
+      return { width: 1200, height: 630, orientation: "landscape" };
+    default: // feed, carrossel, anuncio
+      return { width: 1080, height: 1080, orientation: "square" };
+  }
+}
+
+async function fetchStockPhotoUrl(query: string, orientation: "landscape" | "portrait" | "square"): Promise<string> {
+  const apiKey = process.env.PIXABAY_API_KEY;
+  if (!apiKey) throw new Error("PIXABAY_API_KEY não configurada para o provedor 'stock'.");
+
+  // Pixabay só aceita "horizontal" ou "vertical" (sem opção "square") —
+  // pro formato quadrado usamos horizontal e cortamos com object-fit: cover.
+  const pixabayOrientation = orientation === "portrait" ? "vertical" : "horizontal";
+  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(query)}&image_type=photo&orientation=${pixabayOrientation}&safesearch=true&per_page=3`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Pixabay retornou erro ${res.status}: ${body}`);
+  }
+
+  const data = (await res.json()) as { hits: Array<{ largeImageURL: string }> };
+  const photo = data.hits?.[0];
+  if (!photo) throw new Error(`Nenhuma foto encontrada no Pixabay para "${query}".`);
+  return photo.largeImageURL;
+}
+
+async function generateStock(brief: VisualBrief): Promise<GeneratedImage> {
+  const { width, height, orientation } = dimsForFormat(brief.format);
+  const query = pickStockQuery(brief);
+  const photoUrl = await fetchStockPhotoUrl(query, orientation);
+
+  const response = new ImageResponse(
+    (
+      <div style={{ width: "100%", height: "100%", display: "flex", position: "relative" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          width={width}
+          height={height}
+          style={{ position: "absolute", inset: 0, objectFit: "cover" }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            background:
+              "linear-gradient(180deg, rgba(12,32,21,0.10) 0%, rgba(12,32,21,0.45) 55%, rgba(12,32,21,0.92) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            width: "100%",
+            height: "100%",
+            padding: 64,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              fontSize: 22,
+              fontWeight: 600,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              color: BRAND.colors.amber,
+            }}
+          >
+            {BRAND.fullName} · Agribusiness
+          </div>
+          <div style={{ display: "flex", marginTop: 16, fontSize: 52, fontWeight: 700, color: "#ffffff", lineHeight: 1.15 }}>
+            {brief.headline}
+          </div>
+          {brief.subheadline && (
+            <div style={{ display: "flex", marginTop: 18, fontSize: 26, color: "#f6f1e3" }}>{brief.subheadline}</div>
+          )}
+        </div>
+      </div>
+    ),
+    { width, height }
+  );
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return { url: `data:image/png;base64,${buffer.toString("base64")}`, provider: "stock" };
+}
+
 export async function generateImage(brief: VisualBrief): Promise<GeneratedImage> {
   const provider = (process.env.IMAGE_PROVIDER || "").trim().toLowerCase();
   if (provider === "openai") return generateOpenAI(brief);
+  if (provider === "stock") return generateStock(brief);
   if (provider && provider !== "mock") {
-    throw new Error(`IMAGE_PROVIDER="${provider}" não é suportado. Use "openai" ou deixe em branco para o modo mock.`);
+    throw new Error(`IMAGE_PROVIDER="${provider}" não é suportado. Use "openai", "stock" ou deixe em branco para o modo mock.`);
   }
   return generateMock(brief);
 }
