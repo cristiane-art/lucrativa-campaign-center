@@ -162,7 +162,10 @@ export default async function InscricaoPage({ params }: { params: Promise<{ id: 
             )}
             {campaign.eventLocation && (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campaign.eventLocation)}`}
+                href={
+                  extra.locationMapUrl ||
+                  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campaign.eventLocation)}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/20"

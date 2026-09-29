@@ -270,6 +270,9 @@ export const CampaignBriefingExtraSchema = z.object({
   // Link de convite de um grupo do WhatsApp (ex: https://chat.whatsapp.com/...)
   // mostrado na tela de confirmação depois que a pessoa se inscreve.
   whatsappGroupUrl: z.string().optional(),
+  // Link direto do Google Maps pro local do evento (ex: https://maps.app.goo.gl/...).
+  // Sem isso, o pin do local vira uma busca genérica pelo texto de eventLocation.
+  locationMapUrl: z.string().optional(),
 });
 export type CampaignBriefingExtra = z.infer<typeof CampaignBriefingExtraSchema>;
 

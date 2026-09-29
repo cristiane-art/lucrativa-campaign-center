@@ -43,6 +43,7 @@ export function StepCanais({ campaign, patch }: StepProps) {
   const [ctaLink, setCtaLink] = useState(campaign.ctaLink ?? "");
   const [bannerImageUrl, setBannerImageUrl] = useState(campaign.bannerImageUrl ?? "");
   const [whatsappGroupUrl, setWhatsappGroupUrl] = useState(campaign.briefingExtra.whatsappGroupUrl ?? "");
+  const [locationMapUrl, setLocationMapUrl] = useState(campaign.briefingExtra.locationMapUrl ?? "");
   const [speakerPhotos, setSpeakerPhotos] = useState(
     campaign.briefingExtra.speakers.map((s) => s.photoUrl ?? "")
   );
@@ -113,6 +114,16 @@ export function StepCanais({ campaign, patch }: StepProps) {
           onChange={(e) => setWhatsappGroupUrl(e.target.value)}
           onBlur={() => patch({ briefingExtra: { whatsappGroupUrl } })}
           placeholder="https://chat.whatsapp.com/..."
+        />
+      </div>
+
+      <div>
+        <Label>Link direto do Google Maps pro local do evento (opcional — sem isso, usamos uma busca pelo nome do local)</Label>
+        <Input
+          value={locationMapUrl}
+          onChange={(e) => setLocationMapUrl(e.target.value)}
+          onBlur={() => patch({ briefingExtra: { locationMapUrl } })}
+          placeholder="https://maps.app.goo.gl/..."
         />
       </div>
 
