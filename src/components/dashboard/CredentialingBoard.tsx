@@ -183,7 +183,18 @@ export function CredentialingBoard({
       </Card>
 
       <Card className="mt-6">
-        <CardHeader title="Participantes" subtitle={`${filtered.length} de ${leads.length}`} />
+        <CardHeader
+          title="Participantes"
+          subtitle={`${filtered.length} de ${leads.length}`}
+          action={
+            <a
+              href={`/api/campaigns/${campaignId}/leads/export`}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-accent-strong transition-colors hover:bg-accent-soft"
+            >
+              Baixar planilha
+            </a>
+          }
+        />
         <div className="flex flex-wrap gap-2 border-b border-border px-4 py-3">
           <select className="rounded-lg border border-border bg-surface px-2 py-1 text-xs" value={filters.segment} onChange={(e) => setFilters({ ...filters, segment: e.target.value })}>
             <option value="">Todos os perfis</option>
