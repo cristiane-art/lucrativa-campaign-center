@@ -39,6 +39,24 @@ function sourceLabel(source: string | null): string {
   return source;
 }
 
+// Sem integração paga da API do WhatsApp (decisão explícita — ver
+// docs/integrations.md): isso abre o WhatsApp Web/app já com a conversa do
+// número cadastrado e a mensagem pronta, mas quem envia é a pessoa mesmo,
+// clicando em enviar — um link por participante, não disparo em massa.
+function whatsappConfirmLink(lead: Lead, campaignName: string): string | null {
+  if (!lead.phone) return null;
+  const digits = lead.phone.replace(/\D/g, "");
+  if (!digits) return null;
+  const withCountryCode = digits.startsWith("55") ? digits : `55${digits}`;
+
+  const base = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
+  const confirmUrl = `${base}/confirmar/${lead.id}`;
+  const firstName = lead.name.split(" ")[0];
+  const message = `Oi, ${firstName}! Tudo bem? Confirma sua presença em "${campaignName}"? Responde aqui: ${confirmUrl}`;
+
+  return `https://wa.me/${withCountryCode}?text=${encodeURIComponent(message)}`;
+}
+
 export function CredentialingBoard({
   campaignId,
   campaignName,
@@ -233,6 +251,7 @@ export function CredentialingBoard({
             <thead>
               <tr className="border-b border-border text-xs uppercase text-muted">
                 <th className="px-4 py-2">Nome</th>
+                <th className="px-4 py-2">Telefone</th>
                 <th className="px-4 py-2">Empresa</th>
                 <th className="px-4 py-2">Cargo</th>
                 <th className="px-4 py-2">Cidade</th>
@@ -248,7 +267,7 @@ export function CredentialingBoard({
             <tbody>
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-4 py-6 text-center text-muted">
+                  <td colSpan={12} className="px-4 py-6 text-center text-muted">
                     Nenhum participante com esse filtro.
                   </td>
                 </tr>
@@ -256,6 +275,7 @@ export function CredentialingBoard({
               {filtered.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-2 font-medium text-ink">{l.name}</td>
+                  <td className="px-4 py-2 text-muted">{l.phone || "—"}</td>
                   <td className="px-4 py-2 text-muted">{l.company || "—"}</td>
                   <td className="px-4 py-2 text-muted">{l.role || "—"}</td>
                   <td className="px-4 py-2 text-muted">{l.city || "—"}</td>
@@ -278,13 +298,30 @@ export function CredentialingBoard({
                   </td>
                   <td className="px-4 py-2 text-muted">{new Date(l.createdAt).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2">
-                    <button
-                      onClick={() => removeLead(l)}
-                      className="text-xs font-medium text-red hover:underline"
-                      title="Excluir participante"
-                    >
-                      Excluir
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {whatsappConfirmLink(l, campaignName) ? (
+                        <a
+                          href={whatsappConfirmLink(l, campaignName)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-accent hover:underline"
+                          title="Abrir WhatsApp com mensagem de confirmação pronta"
+                        >
+                          Confirmar por WhatsApp
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted" title="Sem telefone cadastrado">
+                          sem telefone
+                        </span>
+                      )}
+                      <button
+                        onClick={() => removeLead(l)}
+                        className="text-xs font-medium text-red hover:underline"
+                        title="Excluir participante"
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
