@@ -43,18 +43,17 @@ function sourceLabel(source: string | null): string {
 // docs/integrations.md): isso abre o WhatsApp Web/app já com a conversa do
 // número cadastrado e a mensagem pronta, mas quem envia é a pessoa mesmo,
 // clicando em enviar — um link por participante, não disparo em massa.
-function whatsappConfirmLink(lead: Lead, campaignName: string): string | null {
+function whatsappNumber(lead: Lead): string | null {
   if (!lead.phone) return null;
   const digits = lead.phone.replace(/\D/g, "");
   if (!digits) return null;
-  const withCountryCode = digits.startsWith("55") ? digits : `55${digits}`;
+  return digits.startsWith("55") ? digits : `55${digits}`;
+}
 
-  const base = (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
-  const confirmUrl = `${base}/confirmar/${lead.id}`;
+function buildWhatsAppUrl(number: string, confirmUrl: string, lead: Lead, campaignName: string): string {
   const firstName = lead.name.split(" ")[0];
   const message = `Oi, ${firstName}! Tudo bem? Confirma sua presença em "${campaignName}"? Responde aqui: ${confirmUrl}`;
-
-  return `https://wa.me/${withCountryCode}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
 export function CredentialingBoard({
@@ -70,6 +69,7 @@ export function CredentialingBoard({
 }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [whatsappLoadingId, setWhatsappLoadingId] = useState<string | null>(null);
   const [checkinQuery, setCheckinQuery] = useState("");
   const [checkinMsg, setCheckinMsg] = useState<{ tone: "ok" | "warn" | "error"; text: string } | null>(null);
   const [filters, setFilters] = useState<{ segment: string; client: string; source: string; regStatus: string; diagnostic: string }>({
@@ -142,6 +142,23 @@ export function CredentialingBoard({
     });
     setCheckinQuery("");
     load();
+  }
+
+  async function openWhatsAppConfirm(lead: Lead) {
+    const number = whatsappNumber(lead);
+    if (!number) return;
+    setWhatsappLoadingId(lead.id);
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/confirm-link`, { method: "POST" });
+      if (!res.ok) {
+        alert("Não foi possível gerar o link de confirmação.");
+        return;
+      }
+      const data = await res.json();
+      window.open(buildWhatsAppUrl(number, data.shortUrl, lead, campaignName), "_blank", "noopener,noreferrer");
+    } finally {
+      setWhatsappLoadingId(null);
+    }
   }
 
   async function removeLead(lead: Lead) {
@@ -299,16 +316,15 @@ export function CredentialingBoard({
                   <td className="px-4 py-2 text-muted">{new Date(l.createdAt).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-3">
-                      {whatsappConfirmLink(l, campaignName) ? (
-                        <a
-                          href={whatsappConfirmLink(l, campaignName)!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-medium text-accent hover:underline"
+                      {whatsappNumber(l) ? (
+                        <button
+                          onClick={() => openWhatsAppConfirm(l)}
+                          disabled={whatsappLoadingId === l.id}
+                          className="text-xs font-medium text-accent hover:underline disabled:opacity-60"
                           title="Abrir WhatsApp com mensagem de confirmação pronta"
                         >
-                          Confirmar por WhatsApp
-                        </a>
+                          {whatsappLoadingId === l.id ? "Gerando link..." : "Confirmar por WhatsApp"}
+                        </button>
                       ) : (
                         <span className="text-xs text-muted" title="Sem telefone cadastrado">
                           sem telefone
